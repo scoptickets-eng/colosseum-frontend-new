@@ -1,1247 +1,1228 @@
-{\rtf1\ansi\ansicpg1252\cocoartf2865
-\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
-{\colortbl;\red255\green255\blue255;}
-{\*\expandedcolortbl;;}
-\paperw11900\paperh16840\margl1440\margr1440\vieww11520\viewh8400\viewkind0
-\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Colosseum Tickets | Biglietti Colosseo | Entradas Coliseo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;800&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<script src="https://js.stripe.com/v3/"></script>
+<style>
+  :root {
+    --parchment: #f5ead6;
+    --parchment-dark: #e8d5b0;
+    --stone: #c8b89a;
+    --stone-dark: #8b7355;
+    --ink: #2c1810;
+    --ink-light: #4a3020;
+    --gold: #c9a84c;
+    --gold-light: #e8c96a;
+    --red-ancient: #8b1a1a;
+    --red-light: #c0392b;
+    --sepia-overlay: rgba(139,101,60,0.12);
+  }
 
-\f0\fs24 \cf0 <!DOCTYPE html>\
-<html lang="es">\
-<head>\
-<meta charset="UTF-8">\
-<meta name="viewport" content="width=device-width, initial-scale=1.0">\
-<title>Colosseum Tickets | Biglietti Colosseo | Entradas Coliseo</title>\
-<link rel="preconnect" href="https://fonts.googleapis.com">\
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;800&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">\
-<script src="https://js.stripe.com/v3/"></script>\
-<style>\
-  :root \{\
-    --parchment: #f5ead6;\
-    --parchment-dark: #e8d5b0;\
-    --stone: #c8b89a;\
-    --stone-dark: #8b7355;\
-    --ink: #2c1810;\
-    --ink-light: #4a3020;\
-    --gold: #c9a84c;\
-    --gold-light: #e8c96a;\
-    --red-ancient: #8b1a1a;\
-    --red-light: #c0392b;\
-    --sepia-overlay: rgba(139,101,60,0.12);\
-  \}\
-\
-  *, *::before, *::after \{ box-sizing: border-box; margin: 0; padding: 0; \}\
-\
-  body \{\
-    background-color: #1a0f0a;\
-    color: var(--ink);\
-    font-family: 'EB Garamond', Georgia, serif;\
-    font-size: 18px;\
-    line-height: 1.7;\
-    overflow-x: hidden;\
-  \}\
-\
-  /* GRAIN TEXTURE OVERLAY */\
-  body::before \{\
-    content: '';\
-    position: fixed;\
-    inset: 0;\
-    pointer-events: none;\
-    z-index: 9999;\
-    opacity: 0.03;\
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");\
-  \}\
-\
-  /* LANGUAGE SWITCHER */\
-  #lang-bar \{\
-    background: var(--ink);\
-    padding: 8px 40px;\
-    display: flex;\
-    justify-content: flex-end;\
-    gap: 20px;\
-    border-bottom: 1px solid var(--gold);\
-  \}\
-  .lang-btn \{\
-    background: none;\
-    border: none;\
-    color: var(--stone);\
-    font-family: 'Cinzel', serif;\
-    font-size: 11px;\
-    letter-spacing: 2px;\
-    cursor: pointer;\
-    text-transform: uppercase;\
-    transition: color 0.2s;\
-  \}\
-  .lang-btn:hover, .lang-btn.active \{ color: var(--gold); \}\
-  .lang-btn.active \{ border-bottom: 1px solid var(--gold); \}\
-\
-  /* HERO */\
-  #hero \{\
-    position: relative;\
-    min-height: 100vh;\
-    display: flex;\
-    flex-direction: column;\
-    align-items: center;\
-    justify-content: center;\
-    background:\
-      linear-gradient(to bottom, rgba(26,15,10,0.55) 0%, rgba(26,15,10,0.3) 50%, rgba(26,15,10,0.85) 100%),\
-      url('https://upload.wikimedia.org/wikipedia/commons/thumb/d/de/Colosseo_2020.jpg/1600px-Colosseo_2020.jpg') center/cover no-repeat;\
-    text-align: center;\
-    padding: 80px 20px;\
-  \}\
-  #hero::after \{\
-    content: '';\
-    position: absolute;\
-    inset: 0;\
-    background: radial-gradient(ellipse at center, transparent 40%, rgba(26,15,10,0.6) 100%);\
-    pointer-events: none;\
-  \}\
-  .hero-content \{ position: relative; z-index: 2; \}\
-  .hero-label \{\
-    font-family: 'Cinzel', serif;\
-    font-size: 11px;\
-    letter-spacing: 5px;\
-    color: var(--gold);\
-    text-transform: uppercase;\
-    margin-bottom: 20px;\
-    opacity: 0;\
-    animation: fadeUp 1s ease 0.3s forwards;\
-  \}\
-  .hero-title \{\
-    font-family: 'Cinzel', serif;\
-    font-size: clamp(42px, 8vw, 90px);\
-    font-weight: 800;\
-    color: var(--parchment);\
-    line-height: 1.05;\
-    text-shadow: 0 4px 40px rgba(0,0,0,0.7);\
-    opacity: 0;\
-    animation: fadeUp 1s ease 0.5s forwards;\
-  \}\
-  .hero-sub \{\
-    font-family: 'EB Garamond', serif;\
-    font-size: clamp(16px, 2.5vw, 22px);\
-    font-style: italic;\
-    color: var(--stone);\
-    margin-top: 16px;\
-    opacity: 0;\
-    animation: fadeUp 1s ease 0.7s forwards;\
-  \}\
-  .hero-divider \{\
-    width: 120px;\
-    height: 1px;\
-    background: linear-gradient(to right, transparent, var(--gold), transparent);\
-    margin: 30px auto;\
-    opacity: 0;\
-    animation: fadeUp 1s ease 0.9s forwards;\
-  \}\
-  .btn-primary \{\
-    display: inline-block;\
-    font-family: 'Cinzel', serif;\
-    font-size: 13px;\
-    letter-spacing: 3px;\
-    text-transform: uppercase;\
-    color: var(--ink);\
-    background: linear-gradient(135deg, var(--gold), var(--gold-light));\
-    border: none;\
-    padding: 16px 40px;\
-    cursor: pointer;\
-    text-decoration: none;\
-    transition: all 0.3s;\
-    clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);\
-    opacity: 0;\
-    animation: fadeUp 1s ease 1.1s forwards;\
-  \}\
-  .btn-primary:hover \{\
-    transform: translateY(-2px);\
-    box-shadow: 0 8px 30px rgba(201,168,76,0.4);\
-  \}\
-\
-  /* SECTIONS */\
-  section \{\
-    padding: 80px 40px;\
-    max-width: 1200px;\
-    margin: 0 auto;\
-  \}\
-\
-  .section-wrap \{\
-    background: var(--parchment);\
-    position: relative;\
-  \}\
-  .section-wrap::before \{\
-    content: '';\
-    position: absolute;\
-    inset: 0;\
-    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4'%3E%3Crect width='4' height='4' fill='%23f5ead6'/%3E%3Crect width='1' height='1' x='0' y='0' fill='%23e8d5b0' opacity='0.4'/%3E%3C/svg%3E");\
-    opacity: 0.5;\
-    pointer-events: none;\
-  \}\
-\
-  .section-title \{\
-    font-family: 'Cinzel', serif;\
-    font-size: clamp(28px, 4vw, 46px);\
-    font-weight: 600;\
-    color: var(--ink);\
-    text-align: center;\
-    margin-bottom: 10px;\
-    position: relative;\
-  \}\
-  .section-title::after \{\
-    content: '';\
-    display: block;\
-    width: 80px;\
-    height: 2px;\
-    background: linear-gradient(to right, transparent, var(--gold), transparent);\
-    margin: 16px auto 0;\
-  \}\
-  .section-subtitle \{\
-    text-align: center;\
-    color: var(--stone-dark);\
-    font-style: italic;\
-    margin-bottom: 50px;\
-    font-size: 16px;\
-  \}\
-\
-  /* NAV */\
-  nav \{\
-    position: sticky;\
-    top: 0;\
-    z-index: 100;\
-    background: rgba(26,15,10,0.97);\
-    border-bottom: 1px solid rgba(201,168,76,0.3);\
-    padding: 0 40px;\
-    display: flex;\
-    align-items: center;\
-    justify-content: space-between;\
-    height: 64px;\
-    backdrop-filter: blur(10px);\
-  \}\
-  .nav-logo \{\
-    font-family: 'Cinzel', serif;\
-    font-size: 18px;\
-    color: var(--gold);\
-    text-decoration: none;\
-    letter-spacing: 2px;\
-  \}\
-  .nav-links \{ display: flex; gap: 32px; list-style: none; \}\
-  .nav-links a \{\
-    font-family: 'Cinzel', serif;\
-    font-size: 11px;\
-    letter-spacing: 2px;\
-    text-transform: uppercase;\
-    color: var(--stone);\
-    text-decoration: none;\
-    transition: color 0.2s;\
-  \}\
-  .nav-links a:hover \{ color: var(--gold); \}\
-\
-  /* TICKET SECTION */\
-  .ticket-grid \{\
-    display: grid;\
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));\
-    gap: 24px;\
-    margin-top: 40px;\
-  \}\
-\
-  .ticket-card \{\
-    background: var(--ink);\
-    border: 1px solid rgba(201,168,76,0.3);\
-    position: relative;\
-    overflow: hidden;\
-    transition: transform 0.3s, box-shadow 0.3s;\
-  \}\
-  .ticket-card::before \{\
-    content: '';\
-    position: absolute;\
-    top: 0; left: 0; right: 0;\
-    height: 3px;\
-    background: linear-gradient(to right, var(--gold), var(--gold-light));\
-  \}\
-  .ticket-card:hover \{\
-    transform: translateY(-4px);\
-    box-shadow: 0 16px 50px rgba(0,0,0,0.5);\
-  \}\
-  .ticket-card.featured \{\
-    border-color: var(--gold);\
-    transform: scale(1.02);\
-  \}\
-  .ticket-card.featured::after \{\
-    content: attr(data-badge);\
-    position: absolute;\
-    top: 16px; right: -28px;\
-    background: var(--gold);\
-    color: var(--ink);\
-    font-family: 'Cinzel', serif;\
-    font-size: 10px;\
-    letter-spacing: 1px;\
-    padding: 4px 40px;\
-    transform: rotate(45deg);\
-  \}\
-  .ticket-header \{\
-    padding: 28px 28px 16px;\
-    border-bottom: 1px solid rgba(201,168,76,0.15);\
-  \}\
-  .ticket-type \{\
-    font-family: 'Cinzel', serif;\
-    font-size: 11px;\
-    letter-spacing: 3px;\
-    color: var(--gold);\
-    text-transform: uppercase;\
-    margin-bottom: 8px;\
-  \}\
-  .ticket-name \{\
-    font-family: 'Cinzel', serif;\
-    font-size: 22px;\
-    color: var(--parchment);\
-    margin-bottom: 6px;\
-  \}\
-  .ticket-desc \{\
-    font-size: 14px;\
-    color: var(--stone);\
-    font-style: italic;\
-    line-height: 1.5;\
-  \}\
-  .ticket-body \{ padding: 20px 28px; \}\
-  .ticket-includes \{\
-    list-style: none;\
-    margin-bottom: 20px;\
-  \}\
-  .ticket-includes li \{\
-    font-size: 14px;\
-    color: var(--stone);\
-    padding: 5px 0;\
-    border-bottom: 1px solid rgba(255,255,255,0.05);\
-    display: flex;\
-    align-items: center;\
-    gap: 10px;\
-  \}\
-  .ticket-includes li::before \{\
-    content: '\uc0\u10022 ';\
-    color: var(--gold);\
-    font-size: 10px;\
-    flex-shrink: 0;\
-  \}\
-  .ticket-price \{\
-    font-family: 'Cinzel', serif;\
-    font-size: 32px;\
-    color: var(--parchment);\
-    margin-bottom: 4px;\
-  \}\
-  .ticket-price span \{\
-    font-size: 16px;\
-    color: var(--stone);\
-    font-family: 'EB Garamond', serif;\
-  \}\
-  .ticket-price-note \{\
-    font-size: 12px;\
-    color: var(--stone-dark);\
-    margin-bottom: 16px;\
-  \}\
-\
-  /* BOOKING FORM */\
-  .booking-box \{\
-    background: rgba(26,15,10,0.95);\
-    border: 1px solid rgba(201,168,76,0.3);\
-    padding: 40px;\
-    margin-top: 60px;\
-    position: relative;\
-  \}\
-  .booking-box::before \{\
-    content: '\'97 RESERVA TU LUGAR \'97';\
-    font-family: 'Cinzel', serif;\
-    font-size: 10px;\
-    letter-spacing: 4px;\
-    color: var(--gold);\
-    position: absolute;\
-    top: -8px;\
-    left: 50%;\
-    transform: translateX(-50%);\
-    background: var(--parchment);\
-    padding: 0 20px;\
-    white-space: nowrap;\
-  \}\
-  .form-grid \{\
-    display: grid;\
-    grid-template-columns: 1fr 1fr;\
-    gap: 20px;\
-  \}\
-  .form-group \{\
-    display: flex;\
-    flex-direction: column;\
-    gap: 8px;\
-  \}\
-  .form-group.full \{ grid-column: 1 / -1; \}\
-  label \{\
-    font-family: 'Cinzel', serif;\
-    font-size: 10px;\
-    letter-spacing: 2px;\
-    text-transform: uppercase;\
-    color: var(--gold);\
-  \}\
-  select, input[type="text"], input[type="email"], input[type="number"] \{\
-    background: rgba(245,234,214,0.06);\
-    border: 1px solid rgba(201,168,76,0.3);\
-    color: var(--parchment);\
-    font-family: 'EB Garamond', serif;\
-    font-size: 16px;\
-    padding: 12px 16px;\
-    outline: none;\
-    transition: border-color 0.2s;\
-    width: 100%;\
-  \}\
-  select:focus, input:focus \{ border-color: var(--gold); \}\
-  select option \{ background: var(--ink); \}\
-\
-  .timeslots \{\
-    display: grid;\
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));\
-    gap: 10px;\
-    margin-top: 4px;\
-  \}\
-  .timeslot \{\
-    border: 1px solid rgba(201,168,76,0.3);\
-    background: rgba(245,234,214,0.04);\
-    color: var(--stone);\
-    font-family: 'Cinzel', serif;\
-    font-size: 13px;\
-    padding: 10px;\
-    text-align: center;\
-    cursor: pointer;\
-    transition: all 0.2s;\
-  \}\
-  .timeslot:hover \{ border-color: var(--gold); color: var(--gold); \}\
-  .timeslot.selected \{ background: var(--gold); color: var(--ink); border-color: var(--gold); \}\
-  .timeslot.sold-out \{ opacity: 0.35; cursor: not-allowed; text-decoration: line-through; \}\
-\
-  /* STRIPE PAYMENT */\
-  #stripe-section \{\
-    margin-top: 30px;\
-    display: none;\
-  \}\
-  #stripe-section.visible \{ display: block; \}\
-  #card-element \{\
-    background: rgba(245,234,214,0.06);\
-    border: 1px solid rgba(201,168,76,0.3);\
-    padding: 14px 16px;\
-    color: var(--parchment);\
-  \}\
-  #payment-errors \{\
-    color: #e74c3c;\
-    font-size: 14px;\
-    margin-top: 8px;\
-    min-height: 20px;\
-  \}\
-  #order-summary \{\
-    background: rgba(201,168,76,0.08);\
-    border-left: 3px solid var(--gold);\
-    padding: 16px 20px;\
-    margin: 20px 0;\
-    font-size: 15px;\
-    color: var(--parchment);\
-  \}\
-  .order-row \{\
-    display: flex;\
-    justify-content: space-between;\
-    padding: 4px 0;\
-  \}\
-  .order-total \{\
-    font-family: 'Cinzel', serif;\
-    font-size: 18px;\
-    color: var(--gold);\
-    border-top: 1px solid rgba(201,168,76,0.3);\
-    margin-top: 8px;\
-    padding-top: 8px;\
-  \}\
-\
-  /* INFO SECTION */\
-  .info-columns \{\
-    display: grid;\
-    grid-template-columns: 1fr 1fr;\
-    gap: 60px;\
-    align-items: start;\
-  \}\
-  .info-block h3 \{\
-    font-family: 'Cinzel', serif;\
-    font-size: 20px;\
-    color: var(--ink);\
-    margin-bottom: 16px;\
-    padding-bottom: 10px;\
-    border-bottom: 1px solid var(--stone);\
-  \}\
-  .info-block p \{\
-    color: var(--ink-light);\
-    font-size: 16px;\
-    line-height: 1.8;\
-    margin-bottom: 16px;\
-  \}\
-  .info-stat \{\
-    display: grid;\
-    grid-template-columns: 1fr 1fr;\
-    gap: 16px;\
-    margin-top: 24px;\
-  \}\
-  .stat-box \{\
-    background: var(--ink);\
-    color: var(--parchment);\
-    padding: 20px;\
-    text-align: center;\
-  \}\
-  .stat-num \{\
-    font-family: 'Cinzel', serif;\
-    font-size: 32px;\
-    color: var(--gold);\
-    display: block;\
-  \}\
-  .stat-label \{\
-    font-size: 12px;\
-    color: var(--stone);\
-    letter-spacing: 1px;\
-    margin-top: 4px;\
-    display: block;\
-  \}\
-\
-  /* GALLERY */\
-  .gallery-grid \{\
-    display: grid;\
-    grid-template-columns: 2fr 1fr 1fr;\
-    grid-template-rows: 240px 240px;\
-    gap: 8px;\
-  \}\
-  .gallery-item \{\
-    overflow: hidden;\
-    position: relative;\
-    cursor: pointer;\
-  \}\
-  .gallery-item:first-child \{ grid-row: 1 / 3; \}\
-  .gallery-item img \{\
-    width: 100%;\
-    height: 100%;\
-    object-fit: cover;\
-    transition: transform 0.5s;\
-    filter: sepia(30%) contrast(1.05);\
-  \}\
-  .gallery-item:hover img \{ transform: scale(1.05); filter: sepia(10%); \}\
-  .gallery-overlay \{\
-    position: absolute;\
-    inset: 0;\
-    background: linear-gradient(to top, rgba(26,15,10,0.7), transparent);\
-    opacity: 0;\
-    transition: opacity 0.3s;\
-    display: flex;\
-    align-items: flex-end;\
-    padding: 16px;\
-  \}\
-  .gallery-item:hover .gallery-overlay \{ opacity: 1; \}\
-  .gallery-caption \{\
-    font-family: 'Cinzel', serif;\
-    font-size: 12px;\
-    color: var(--gold);\
-    letter-spacing: 2px;\
-  \}\
-\
-  /* FAQ */\
-  .faq-list \{ max-width: 800px; margin: 0 auto; \}\
-  .faq-item \{\
-    border-bottom: 1px solid var(--stone);\
-    overflow: hidden;\
-  \}\
-  .faq-q \{\
-    font-family: 'Cinzel', serif;\
-    font-size: 16px;\
-    color: var(--ink);\
-    padding: 20px 0;\
-    cursor: pointer;\
-    display: flex;\
-    justify-content: space-between;\
-    align-items: center;\
-    gap: 16px;\
-    user-select: none;\
-  \}\
-  .faq-q::after \{\
-    content: '\uc0\u10022 ';\
-    color: var(--gold);\
-    font-size: 12px;\
-    transition: transform 0.3s;\
-    flex-shrink: 0;\
-  \}\
-  .faq-item.open .faq-q::after \{ transform: rotate(45deg); \}\
-  .faq-a \{\
-    max-height: 0;\
-    overflow: hidden;\
-    transition: max-height 0.4s ease;\
-    color: var(--ink-light);\
-    font-size: 16px;\
-    line-height: 1.8;\
-  \}\
-  .faq-item.open .faq-a \{ max-height: 300px; \}\
-  .faq-a p \{ padding-bottom: 20px; \}\
-\
-  /* FOOTER */\
-  footer \{\
-    background: var(--ink);\
-    border-top: 1px solid rgba(201,168,76,0.3);\
-    padding: 50px 40px 30px;\
-    text-align: center;\
-  \}\
-  .footer-logo \{\
-    font-family: 'Cinzel', serif;\
-    font-size: 28px;\
-    color: var(--gold);\
-    margin-bottom: 10px;\
-  \}\
-  .footer-note \{\
-    font-size: 13px;\
-    color: var(--stone-dark);\
-    margin-bottom: 30px;\
-    font-style: italic;\
-  \}\
-  .footer-links \{\
-    display: flex;\
-    justify-content: center;\
-    gap: 30px;\
-    flex-wrap: wrap;\
-    margin-bottom: 30px;\
-    list-style: none;\
-  \}\
-  .footer-links a \{\
-    font-family: 'Cinzel', serif;\
-    font-size: 11px;\
-    letter-spacing: 2px;\
-    color: var(--stone);\
-    text-decoration: none;\
-    transition: color 0.2s;\
-  \}\
-  .footer-links a:hover \{ color: var(--gold); \}\
-  .footer-bottom \{\
-    font-size: 12px;\
-    color: var(--stone-dark);\
-    border-top: 1px solid rgba(255,255,255,0.06);\
-    padding-top: 20px;\
-  \}\
-\
-  /* TOAST */\
-  #toast \{\
-    position: fixed;\
-    bottom: 30px;\
-    right: 30px;\
-    background: var(--ink);\
-    border: 1px solid var(--gold);\
-    color: var(--parchment);\
-    padding: 16px 24px;\
-    font-family: 'Cinzel', serif;\
-    font-size: 13px;\
-    letter-spacing: 1px;\
-    transform: translateY(100px);\
-    opacity: 0;\
-    transition: all 0.4s;\
-    z-index: 9999;\
-  \}\
-  #toast.show \{ transform: translateY(0); opacity: 1; \}\
-\
-  @keyframes fadeUp \{\
-    from \{ opacity: 0; transform: translateY(20px); \}\
-    to \{ opacity: 1; transform: translateY(0); \}\
-  \}\
-\
-  @media (max-width: 768px) \{\
-    nav .nav-links \{ display: none; \}\
-    .form-grid \{ grid-template-columns: 1fr; \}\
-    .info-columns \{ grid-template-columns: 1fr; \}\
-    .gallery-grid \{ grid-template-columns: 1fr 1fr; grid-template-rows: auto; \}\
-    .gallery-item:first-child \{ grid-row: auto; grid-column: 1 / -1; \}\
-    section \{ padding: 60px 20px; \}\
-    .booking-box \{ padding: 30px 20px; \}\
-  \}\
-</style>\
-</head>\
-<body>\
-\
-<!-- LANGUAGE BAR -->\
-<div id="lang-bar">\
-  <button class="lang-btn active" onclick="setLang('es')">ES</button>\
-  <button class="lang-btn" onclick="setLang('en')">EN</button>\
-  <button class="lang-btn" onclick="setLang('it')">IT</button>\
-</div>\
-\
-<!-- NAV -->\
-<nav>\
-  <a href="#" class="nav-logo">COLOSSEUM</a>\
-  <ul class="nav-links">\
-    <li><a href="#tickets" data-i18n="nav_tickets">Entradas</a></li>\
-    <li><a href="#info" data-i18n="nav_info">Historia</a></li>\
-    <li><a href="#gallery" data-i18n="nav_gallery">Galer\'eda</a></li>\
-    <li><a href="#faq" data-i18n="nav_faq">FAQ</a></li>\
-  </ul>\
-</nav>\
-\
-<!-- HERO -->\
-<div id="hero">\
-  <div class="hero-content">\
-    <p class="hero-label" data-i18n="hero_label">Roma \'b7 Anno Domini LXXX</p>\
-    <h1 class="hero-title" data-i18n="hero_title">COLOSSEUM</h1>\
-    <p class="hero-sub" data-i18n="hero_sub">Amphitheatrum Flavium \'97 Roma, Italia</p>\
-    <div class="hero-divider"></div>\
-    <a href="#tickets" class="btn-primary" data-i18n="hero_cta">Reservar Entradas</a>\
-  </div>\
-</div>\
-\
-<!-- TICKETS -->\
-<div class="section-wrap" id="tickets">\
-  <section>\
-    <h2 class="section-title" data-i18n="tickets_title">Entradas & Experiencias</h2>\
-    <p class="section-subtitle" data-i18n="tickets_sub">Elige tu forma de vivir la historia</p>\
-\
-    <div class="ticket-grid">\
-      <!-- STANDARD -->\
-      <div class="ticket-card" data-ticket="standard" data-price="23">\
-        <div class="ticket-header">\
-          <div class="ticket-type" data-i18n="t1_type">Acceso Est\'e1ndar</div>\
-          <div class="ticket-name" data-i18n="t1_name">Entrada Cl\'e1sica</div>\
-          <div class="ticket-desc" data-i18n="t1_desc">La visita esencial: Coliseo, Foro Romano y Palatino. Todo lo que necesit\'e1s para vivir Roma antigua.</div>\
-        </div>\
-        <div class="ticket-body">\
-          <ul class="ticket-includes">\
-            <li data-i18n="t1_i1">Acceso al Coliseo (\'e1reas generales)</li>\
-            <li data-i18n="t1_i2">Foro Romano y Monte Palatino</li>\
-            <li data-i18n="t1_i3">Entrada con horario reservado</li>\
-            <li data-i18n="t1_i4">V\'e1lido 24 hs \'b7 Sin cola en taquilla</li>\
-          </ul>\
-          <div class="ticket-price">\'8023 <span data-i18n="per_adult">/ adulto</span></div>\
-          <div class="ticket-price-note" data-i18n="t1_note">Menores de 18: \'8013 \'b7 Menores de 6: gratis</div>\
-          <button class="btn-primary" style="width:100%;text-align:center" onclick="selectTicket('standard', 23)" data-i18n="select_btn">Seleccionar</button>\
-        </div>\
-      </div>\
-\
-      <!-- FULL EXPERIENCE -->\
-      <div class="ticket-card featured" data-badge="\uc0\u9733  POPULAR" data-ticket="full" data-price="27">\
-        <div class="ticket-header">\
-          <div class="ticket-type" data-i18n="t2_type">Experiencia Completa</div>\
-          <div class="ticket-name" data-i18n="t2_name">Coliseo + Arena Floor</div>\
-          <div class="ticket-desc" data-i18n="t2_desc">Pis\'e1 el suelo donde lucharon los gladiadores. Acceso al m\'edtico piso de la arena, el lugar m\'e1s fotografiado del Coliseo.</div>\
-        </div>\
-        <div class="ticket-body">\
-          <ul class="ticket-includes">\
-            <li data-i18n="t2_i1">Todo lo del plan Cl\'e1sico</li>\
-            <li data-i18n="t2_i2">Suelo de la Arena (arena floor)</li>\
-            <li data-i18n="t2_i3">Acceso prioritario sin cola</li>\
-            <li data-i18n="t2_i4">Disponible solo con reserva previa</li>\
-          </ul>\
-          <div class="ticket-price">\'8027 <span data-i18n="per_adult">/ adulto</span></div>\
-          <div class="ticket-price-note" data-i18n="t2_note">Menores de 18: \'8017 \'b7 Menores de 6: gratis</div>\
-          <button class="btn-primary" style="width:100%;text-align:center" onclick="selectTicket('full', 27)" data-i18n="select_btn">Seleccionar</button>\
-        </div>\
-      </div>\
-\
-      <!-- VIP -->\
-      <div class="ticket-card" data-ticket="vip" data-price="37">\
-        <div class="ticket-header">\
-          <div class="ticket-type" data-i18n="t3_type">Tour VIP con Gu\'eda</div>\
-          <div class="ticket-name" data-i18n="t3_name">Arena + Tour Guiado</div>\
-          <div class="ticket-desc" data-i18n="t3_desc">La experiencia m\'e1s completa: Arena Floor + gu\'eda experto en grupos reducidos. Sin dudas, sin perderse nada.</div>\
-        </div>\
-        <div class="ticket-body">\
-          <ul class="ticket-includes">\
-            <li data-i18n="t3_i1">Todo lo del plan Completo</li>\
-            <li data-i18n="t3_i2">Gu\'eda experto certificado incluido</li>\
-            <li data-i18n="t3_i3">Grupos reducidos (m\'e1x. 25 personas)</li>\
-            <li data-i18n="t3_i4">Duraci\'f3n aprox. 2 horas</li>\
-          </ul>\
-          <div class="ticket-price">\'8037 <span data-i18n="per_adult">/ adulto</span></div>\
-          <div class="ticket-price-note" data-i18n="t3_note">Menores de 18: \'8023 \'b7 Menores de 6: gratis</div>\
-          <button class="btn-primary" style="width:100%;text-align:center" onclick="selectTicket('vip', 37)" data-i18n="select_btn">Seleccionar</button>\
-        </div>\
-      </div>\
-    </div>\
-\
-    <!-- BOOKING FORM -->\
-    <div class="booking-box" id="booking-form" style="display:none">\
-      <h3 style="font-family:'Cinzel',serif;font-size:20px;color:var(--parchment);margin-bottom:24px;text-align:center" data-i18n="booking_title">Completa tu Reserva</h3>\
-      <div class="form-grid">\
-        <div class="form-group">\
-          <label data-i18n="form_date">Fecha de visita</label>\
-          <input type="text" id="visit-date" placeholder="DD / MM / AAAA">\
-        </div>\
-        <div class="form-group">\
-          <label data-i18n="form_adults">Adultos</label>\
-          <input type="number" id="qty-adults" min="1" max="20" value="1" onchange="updateTotal()">\
-        </div>\
-        <div class="form-group">\
-          <label data-i18n="form_children">Ni\'f1os (6-17)</label>\
-          <input type="number" id="qty-children" min="0" max="20" value="0" onchange="updateTotal()">\
-        </div>\
-        <div class="form-group">\
-          <label data-i18n="form_infants">Infantes (0-5)</label>\
-          <input type="number" id="qty-infants" min="0" max="10" value="0">\
-        </div>\
-        <div class="form-group full">\
-          <label data-i18n="form_time">Horario de entrada</label>\
-          <div class="timeslots" id="timeslots">\
-            <div class="timeslot" onclick="selectTime(this)">09:00</div>\
-            <div class="timeslot" onclick="selectTime(this)">09:30</div>\
-            <div class="timeslot" onclick="selectTime(this)">10:00</div>\
-            <div class="timeslot sold-out">10:30</div>\
-            <div class="timeslot" onclick="selectTime(this)">11:00</div>\
-            <div class="timeslot" onclick="selectTime(this)">11:30</div>\
-            <div class="timeslot sold-out">12:00</div>\
-            <div class="timeslot" onclick="selectTime(this)">12:30</div>\
-            <div class="timeslot" onclick="selectTime(this)">13:00</div>\
-            <div class="timeslot" onclick="selectTime(this)">13:30</div>\
-            <div class="timeslot" onclick="selectTime(this)">14:00</div>\
-            <div class="timeslot" onclick="selectTime(this)">14:30</div>\
-            <div class="timeslot" onclick="selectTime(this)">15:00</div>\
-            <div class="timeslot sold-out">15:30</div>\
-            <div class="timeslot" onclick="selectTime(this)">16:00</div>\
-            <div class="timeslot" onclick="selectTime(this)">16:30</div>\
-          </div>\
-        </div>\
-        <div class="form-group">\
-          <label data-i18n="form_name">Nombre completo</label>\
-          <input type="text" id="visitor-name" placeholder="John Smith">\
-        </div>\
-        <div class="form-group">\
-          <label data-i18n="form_email">Correo electr\'f3nico</label>\
-          <input type="email" id="visitor-email" placeholder="john@email.com">\
-        </div>\
-      </div>\
-\
-      <!-- ORDER SUMMARY -->\
-      <div id="order-summary" style="display:none;margin-top:24px">\
-        <div class="order-row"><span data-i18n="order_type">Tipo:</span><span id="sum-type">\'97</span></div>\
-        <div class="order-row"><span data-i18n="order_date">Fecha:</span><span id="sum-date">\'97</span></div>\
-        <div class="order-row"><span data-i18n="order_time">Horario:</span><span id="sum-time">\'97</span></div>\
-        <div class="order-row"><span data-i18n="order_qty">Entradas:</span><span id="sum-qty">\'97</span></div>\
-        <div class="order-row order-total"><span data-i18n="order_total">Total:</span><span id="sum-total">\'800</span></div>\
-      </div>\
-\
-      <button class="btn-primary" style="margin-top:20px" onclick="proceedToPayment()" data-i18n="proceed_pay">Continuar al pago \uc0\u8594 </button>\
-\
-      <!-- STRIPE PAYMENT -->\
-      <div id="stripe-section">\
-        <div style="margin:24px 0 12px">\
-          <label style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:2px;color:var(--gold);display:block;margin-bottom:10px" data-i18n="card_label">Datos de la tarjeta</label>\
-          <div id="card-element"></div>\
-          <div id="payment-errors"></div>\
-        </div>\
-        <div style="font-size:12px;color:var(--stone-dark);margin-bottom:20px;display:flex;align-items:center;gap:8px">\
-          <span>\uc0\u55357 \u56594 </span>\
-          <span data-i18n="secure_msg">Pago seguro procesado por Stripe. No almacenamos datos de tarjeta.</span>\
-        </div>\
-        <button class="btn-primary" id="pay-btn" onclick="submitPayment()" data-i18n="pay_btn">Confirmar y Pagar</button>\
-      </div>\
-    </div>\
-  </section>\
-</div>\
-\
-<!-- INFO / HISTORIA -->\
-<div style="background:#1a0f0a" id="info">\
-  <section>\
-    <h2 class="section-title" style="color:var(--parchment)" data-i18n="info_title">El Coliseo de Roma</h2>\
-    <p class="section-subtitle" style="color:var(--stone)" data-i18n="info_sub">Maravilla del mundo antiguo</p>\
-    <div class="info-columns">\
-      <div class="info-block">\
-        <h3 style="color:var(--parchment);border-color:var(--stone-dark)" data-i18n="info_h1">Historia & Construcci\'f3n</h3>\
-        <p style="color:var(--stone)" data-i18n="info_p1">El Coliseo, conocido en la antig\'fcedad como el Anfiteatro Flavio, fue construido entre el 70 y el 80 d.C. bajo los emperadores Vespasiano y Tito. Con capacidad para m\'e1s de 50.000 espectadores, es el anfiteatro romano m\'e1s grande jam\'e1s construido.</p>\
-        <p style="color:var(--stone)" data-i18n="info_p2">Durante m\'e1s de cuatro siglos fue el escenario de los grandes espect\'e1culos p\'fablicos de Roma: combates de gladiadores, caza de animales ex\'f3ticos, ejecuciones y representaciones de famosas batallas. Su arquitectura ha sido fuente de inspiraci\'f3n durante siglos.</p>\
-        <div class="info-stat">\
-          <div class="stat-box"><span class="stat-num">50K</span><span class="stat-label" data-i18n="stat1">Espectadores</span></div>\
-          <div class="stat-box"><span class="stat-num">80 d.C.</span><span class="stat-label" data-i18n="stat2">Inauguraci\'f3n</span></div>\
-          <div class="stat-box"><span class="stat-num">188m</span><span class="stat-label" data-i18n="stat3">Longitud</span></div>\
-          <div class="stat-box"><span class="stat-num">48m</span><span class="stat-label" data-i18n="stat4">Altura</span></div>\
-        </div>\
-      </div>\
-      <div class="info-block">\
-        <h3 style="color:var(--parchment);border-color:var(--stone-dark)" data-i18n="info_h2">Informaci\'f3n Pr\'e1ctica</h3>\
-        <p style="color:var(--stone)" data-i18n="info_p3"><strong style="color:var(--gold)">Horario:</strong> Todos los d\'edas de 9:00 a 19:00 hs (\'faltima entrada 18:00). Horario reducido en invierno.</p>\
-        <p style="color:var(--stone)" data-i18n="info_p4"><strong style="color:var(--gold)">C\'f3mo llegar:</strong> Metro l\'ednea B, parada Colosseo. Autob\'fas: l\'edneas 3, 8, 60, 75, 85, 117, 175. Tren desde Termini: 2 estaciones.</p>\
-        <p style="color:var(--stone)" data-i18n="info_p5"><strong style="color:var(--gold)">Recomendaciones:</strong> Reserva con al menos 3 d\'edas de antelaci\'f3n en temporada alta (abril-octubre). Usa calzado c\'f3modo. No se permiten maletas grandes.</p>\
-        <p style="color:var(--stone)" data-i18n="info_p6"><strong style="color:var(--gold)">Direcci\'f3n:</strong> Piazza del Colosseo, 1, 00184 Roma RM, Italia.</p>\
-      </div>\
-    </div>\
-  </section>\
-</div>\
-\
-<!-- GALLERY -->\
-<div class="section-wrap" id="gallery">\
-  <section>\
-    <h2 class="section-title" data-i18n="gallery_title">Galer\'eda</h2>\
-    <p class="section-subtitle" data-i18n="gallery_sub">Im\'e1genes del Amphitheatrum Flavium</p>\
-    <div class="gallery-grid">\
-      <div class="gallery-item">\
-        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/de/Colosseo_2020.jpg/1280px-Colosseo_2020.jpg" alt="Colosseum exterior" loading="lazy">\
-        <div class="gallery-overlay"><span class="gallery-caption" data-i18n="g1">Vista Exterior</span></div>\
-      </div>\
-      <div class="gallery-item">\
-        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/Colosseum_interior_wide-angle.jpg/800px-Colosseum_interior_wide-angle.jpg" alt="Colosseum interior" loading="lazy">\
-        <div class="gallery-overlay"><span class="gallery-caption" data-i18n="g2">Interior Arena</span></div>\
-      </div>\
-      <div class="gallery-item">\
-        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Colosseum_in_Rome%2C_Italy_-_April_2007.jpg/800px-Colosseum_in_Rome%2C_Italy_-_April_2007.jpg" alt="Colosseum sunset" loading="lazy">\
-        <div class="gallery-overlay"><span class="gallery-caption" data-i18n="g3">Atardecer</span></div>\
-      </div>\
-      <div class="gallery-item">\
-        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/af/All_Gizah_Pyramids.jpg/800px-All_Gizah_Pyramids.jpg" alt="Ancient Rome" loading="lazy">\
-        <div class="gallery-overlay"><span class="gallery-caption" data-i18n="g4">Detalles Arquitect\'f3nicos</span></div>\
-      </div>\
-      <div class="gallery-item">\
-        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Colosseum_HD.jpg/800px-Colosseum_HD.jpg" alt="Colosseum HD" loading="lazy">\
-        <div class="gallery-overlay"><span class="gallery-caption" data-i18n="g5">Arcos Hist\'f3ricos</span></div>\
-      </div>\
-    </div>\
-  </section>\
-</div>\
-\
-<!-- FAQ -->\
-<div style="background:#1a0f0a" id="faq">\
-  <section>\
-    <h2 class="section-title" style="color:var(--parchment)" data-i18n="faq_title">Preguntas Frecuentes</h2>\
-    <p class="section-subtitle" style="color:var(--stone)" data-i18n="faq_sub">Todo lo que necesit\'e1s saber antes de visitar</p>\
-    <div class="faq-list">\
-      <div class="faq-item" style="border-color:var(--stone-dark)">\
-        <div class="faq-q" style="color:var(--parchment)" onclick="toggleFaq(this)" data-i18n="faq_q1">\'bfCon cu\'e1nta antelaci\'f3n debo reservar?</div>\
-        <div class="faq-a"><p style="color:var(--stone)" data-i18n="faq_a1">Recomendamos reservar con al menos 3-5 d\'edas de antelaci\'f3n en temporada baja y 7-14 d\'edas en temporada alta (abril a octubre). Las entradas VIP al Hypogeum se agotan con semanas de anticipaci\'f3n.</p></div>\
-      </div>\
-      <div class="faq-item" style="border-color:var(--stone-dark)">\
-        <div class="faq-q" style="color:var(--parchment)" onclick="toggleFaq(this)" data-i18n="faq_q2">\'bfPuedo cancelar o cambiar mi reserva?</div>\
-        <div class="faq-a"><p style="color:var(--stone)" data-i18n="faq_a2">S\'ed. Las cancelaciones son gratuitas hasta 48 horas antes de la visita. Pod\'e9s reprogramar sin cargo adicional hasta 24 horas antes, sujeto a disponibilidad.</p></div>\
-      </div>\
-      <div class="faq-item" style="border-color:var(--stone-dark)">\
-        <div class="faq-q" style="color:var(--parchment)" onclick="toggleFaq(this)" data-i18n="faq_q3">\'bfC\'f3mo recibo mis entradas?</div>\
-        <div class="faq-a"><p style="color:var(--stone)" data-i18n="faq_a3">Recibir\'e1s un email de confirmaci\'f3n con tus entradas en formato PDF y QR code, listas para mostrar desde tu tel\'e9fono. No es necesario imprimirlas.</p></div>\
-      </div>\
-      <div class="faq-item" style="border-color:var(--stone-dark)">\
-        <div class="faq-q" style="color:var(--parchment)" onclick="toggleFaq(this)" data-i18n="faq_q4">\'bfHay descuentos para grupos o colegios?</div>\
-        <div class="faq-a"><p style="color:var(--stone)" data-i18n="faq_a4">S\'ed. Grupos de m\'e1s de 15 personas tienen un 15% de descuento. Grupos escolares con acreditaci\'f3n docente tienen hasta 25% de descuento. Contactanos por email para reservas grupales.</p></div>\
-      </div>\
-      <div class="faq-item" style="border-color:var(--stone-dark)">\
-        <div class="faq-q" style="color:var(--parchment)" onclick="toggleFaq(this)" data-i18n="faq_q5">\'bfEl sitio es accesible para personas con movilidad reducida?</div>\
-        <div class="faq-a"><p style="color:var(--stone)" data-i18n="faq_a5">El Coliseo cuenta con acceso para sillas de ruedas en la planta baja y arena. Los niveles superiores son accesibles en parte. Recomendamos contactarnos para coordinar la visita y asegurar la mejor experiencia.</p></div>\
-      </div>\
-    </div>\
-  </section>\
-</div>\
-\
-<!-- FOOTER -->\
-<footer>\
-  <div class="footer-logo">COLOSSEUM</div>\
-  <p class="footer-note" data-i18n="footer_note">Servicio oficial de venta de entradas \'b7 Roma, Italia</p>\
-  <ul class="footer-links">\
-    <li><a href="#" data-i18n="footer_terms">T\'e9rminos y condiciones</a></li>\
-    <li><a href="#" data-i18n="footer_privacy">Pol\'edtica de privacidad</a></li>\
-    <li><a href="#" data-i18n="footer_contact">Contacto</a></li>\
-    <li><a href="#" data-i18n="footer_access">Accesibilidad</a></li>\
-  </ul>\
-  <p class="footer-bottom">\'a9 2025 Colosseum Tickets \'b7 Powered by Stripe \'b7 <span data-i18n="footer_legal">Este sitio es un servicio de intermediaci\'f3n independiente.</span></p>\
-</footer>\
-\
-<div id="toast"></div>\
-\
-<script>\
-// =====================\
-// TRANSLATIONS\
-// =====================\
-const i18n = \{\
-  es: \{\
-    nav_tickets: 'Entradas', nav_info: 'Historia', nav_gallery: 'Galer\'eda', nav_faq: 'FAQ',\
-    hero_label: 'Roma \'b7 Anno Domini LXXX', hero_title: 'COLOSSEUM', hero_sub: 'Amphitheatrum Flavium \'97 Roma, Italia', hero_cta: 'Reservar Entradas',\
-    tickets_title: 'Entradas & Experiencias', tickets_sub: 'Elige tu forma de vivir la historia',\
-    t1_type:'Acceso Est\'e1ndar', t1_name:'Entrada Cl\'e1sica', t1_desc:'La visita esencial: Coliseo, Foro Romano y Palatino. Todo lo que necesit\'e1s para vivir Roma antigua.',\
-    t1_i1:'Acceso al Coliseo (\'e1reas generales)', t1_i2:'Foro Romano y Monte Palatino', t1_i3:'Entrada con horario reservado', t1_i4:'V\'e1lido 24 hs \'b7 Sin cola en taquilla',\
-    t2_type:'Experiencia Completa', t2_name:'Coliseo + Arena Floor', t2_desc:'Pis\'e1 el suelo donde lucharon los gladiadores. Acceso al m\'edtico piso de la arena, el lugar m\'e1s fotografiado del Coliseo.',\
-    t2_i1:'Todo lo del plan Cl\'e1sico', t2_i2:'Suelo de la Arena (arena floor)', t2_i3:'Acceso prioritario sin cola', t2_i4:'Disponible solo con reserva previa',\
-    t3_type:'Tour VIP con Gu\'eda', t3_name:'Arena + Tour Guiado', t3_desc:'La experiencia m\'e1s completa: Arena Floor + gu\'eda experto en grupos reducidos. Sin dudas, sin perderse nada.',\
-    t3_i1:'Todo lo del plan Completo', t3_i2:'Gu\'eda experto certificado incluido', t3_i3:'Grupos reducidos (m\'e1x. 25 personas)', t3_i4:'Duraci\'f3n aprox. 2 horas',\
-    per_adult:'/ adulto', t1_note:'Menores de 18: \'8013 \'b7 Menores de 6: gratis', t2_note:'Menores de 18: \'8017 \'b7 Menores de 6: gratis', t3_note:'Menores de 18: \'8023 \'b7 Menores de 6: gratis',\
-    select_btn:'Seleccionar', booking_title:'Completa tu Reserva',\
-    form_date:'Fecha de visita', form_adults:'Adultos', form_children:'Ni\'f1os (6-17)', form_infants:'Infantes (0-5)', form_time:'Horario de entrada', form_name:'Nombre completo', form_email:'Correo electr\'f3nico',\
-    order_type:'Tipo:', order_date:'Fecha:', order_time:'Horario:', order_qty:'Entradas:', order_total:'Total:',\
-    proceed_pay:'Continuar al pago \uc0\u8594 ', card_label:'Datos de la tarjeta', secure_msg:'Pago seguro procesado por Stripe. No almacenamos datos de tarjeta.', pay_btn:'Confirmar y Pagar',\
-    info_title:'El Coliseo de Roma', info_sub:'Maravilla del mundo antiguo',\
-    info_h1:'Historia & Construcci\'f3n', info_h2:'Informaci\'f3n Pr\'e1ctica',\
-    info_p1:'El Coliseo, conocido en la antig\'fcedad como el Anfiteatro Flavio, fue construido entre el 70 y el 80 d.C. bajo los emperadores Vespasiano y Tito.',\
-    info_p2:'Durante m\'e1s de cuatro siglos fue el escenario de los grandes espect\'e1culos p\'fablicos de Roma: combates de gladiadores, caza de animales ex\'f3ticos y representaciones de famosas batallas.',\
-    info_p3:'<strong style="color:var(--gold)">Horario:</strong> Todos los d\'edas de 9:00 a 19:00 hs (\'faltima entrada 18:00).',\
-    info_p4:'<strong style="color:var(--gold)">C\'f3mo llegar:</strong> Metro l\'ednea B, parada Colosseo.',\
-    info_p5:'<strong style="color:var(--gold)">Recomendaciones:</strong> Reserva con al menos 3 d\'edas de antelaci\'f3n en temporada alta.',\
-    info_p6:'<strong style="color:var(--gold)">Direcci\'f3n:</strong> Piazza del Colosseo, 1, 00184 Roma RM, Italia.',\
-    stat1:'Espectadores', stat2:'Inauguraci\'f3n', stat3:'Longitud', stat4:'Altura',\
-    gallery_title:'Galer\'eda', gallery_sub:'Im\'e1genes del Amphitheatrum Flavium',\
-    g1:'Vista Exterior', g2:'Interior Arena', g3:'Atardecer', g4:'Detalles Arquitect\'f3nicos', g5:'Arcos Hist\'f3ricos',\
-    faq_title:'Preguntas Frecuentes', faq_sub:'Todo lo que necesit\'e1s saber',\
-    faq_q1:'\'bfCon cu\'e1nta antelaci\'f3n debo reservar?', faq_a1:'Recomendamos 3-5 d\'edas en temporada baja y 7-14 en temporada alta. Las entradas VIP se agotan semanas antes.',\
-    faq_q2:'\'bfPuedo cancelar o cambiar mi reserva?', faq_a2:'Cancelaciones gratuitas hasta 48 horas antes. Reprogramaci\'f3n sin cargo hasta 24 horas antes.',\
-    faq_q3:'\'bfC\'f3mo recibo mis entradas?', faq_a3:'Email con PDF y QR code. No es necesario imprimir.',\
-    faq_q4:'\'bfHay descuentos para grupos?', faq_a4:'Grupos +15 personas: 15% descuento. Colegios: hasta 25%. Contactanos para reservas grupales.',\
-    faq_q5:'\'bfAccesibilidad para movilidad reducida?', faq_a5:'Acceso para sillas de ruedas en planta baja y arena. Contactanos para coordinar.',\
-    footer_note:'Servicio de venta de entradas \'b7 Roma, Italia', footer_terms:'T\'e9rminos', footer_privacy:'Privacidad', footer_contact:'Contacto', footer_access:'Accesibilidad', footer_legal:'Servicio de intermediaci\'f3n independiente.'\
-  \},\
-  en: \{\
-    nav_tickets:'Tickets', nav_info:'History', nav_gallery:'Gallery', nav_faq:'FAQ',\
-    hero_label:'Rome \'b7 Anno Domini LXXX', hero_title:'COLOSSEUM', hero_sub:'Amphitheatrum Flavium \'97 Rome, Italy', hero_cta:'Book Tickets',\
-    tickets_title:'Tickets & Experiences', tickets_sub:'Choose how you want to live history',\
-    t1_type:'Standard Access', t1_name:'Classic Entry', t1_desc:'The essential visit: Colosseum, Roman Forum and Palatine Hill. Everything you need to experience ancient Rome.',\
-    t1_i1:'Colosseum entry (general areas)', t1_i2:'Roman Forum & Palatine Hill', t1_i3:'Timed entry \'97 no ticket booth queue', t1_i4:'Valid 24 hours',\
-    t2_type:'Full Experience', t2_name:'Colosseum + Arena Floor', t2_desc:'Step onto the floor where gladiators fought. Access to the iconic arena floor, the most photographed spot in the Colosseum.',\
-    t2_i1:'Everything in Classic', t2_i2:'Arena Floor access', t2_i3:'Priority skip-the-line entry', t2_i4:'Available by advance booking only',\
-    t3_type:'VIP Guided Tour', t3_name:'Arena + Expert Guide', t3_desc:'The most complete experience: Arena Floor plus a certified expert guide in small groups. See everything, miss nothing.',\
-    t3_i1:'Everything in Full Experience', t3_i2:'Certified expert guide included', t3_i3:'Small groups (max. 25 people)', t3_i4:'Approx. 2 hours duration',\
-    per_adult:'/ adult', t1_note:'Under 18: \'8013 \'b7 Under 6: free', t2_note:'Under 18: \'8017 \'b7 Under 6: free', t3_note:'Under 18: \'8023 \'b7 Under 6: free',\
-    select_btn:'Select', booking_title:'Complete Your Booking',\
-    form_date:'Visit date', form_adults:'Adults', form_children:'Children (6-17)', form_infants:'Infants (0-5)', form_time:'Entry time', form_name:'Full name', form_email:'Email address',\
-    order_type:'Type:', order_date:'Date:', order_time:'Time:', order_qty:'Tickets:', order_total:'Total:',\
-    proceed_pay:'Proceed to payment \uc0\u8594 ', card_label:'Card details', secure_msg:'Secure payment processed by Stripe. We never store card data.', pay_btn:'Confirm & Pay',\
-    info_title:'The Colosseum of Rome', info_sub:'Wonder of the ancient world',\
-    info_h1:'History & Construction', info_h2:'Practical Information',\
-    info_p1:'The Colosseum, known in antiquity as the Flavian Amphitheatre, was built between 70 and 80 AD under emperors Vespasian and Titus.',\
-    info_p2:'For over four centuries it was the stage for Rome\\'s great public spectacles: gladiatorial combat, exotic animal hunts, and reenactments of famous battles.',\
-    info_p3:'<strong style="color:var(--gold)">Hours:</strong> Open daily 9:00\'9619:00 (last entry 18:00).',\
-    info_p4:'<strong style="color:var(--gold)">Getting there:</strong> Metro Line B, Colosseo stop.',\
-    info_p5:'<strong style="color:var(--gold)">Tips:</strong> Book at least 3 days ahead in high season (Apr\'96Oct).',\
-    info_p6:'<strong style="color:var(--gold)">Address:</strong> Piazza del Colosseo, 1, 00184 Roma RM, Italy.',\
-    stat1:'Spectators', stat2:'Inauguration', stat3:'Length', stat4:'Height',\
-    gallery_title:'Gallery', gallery_sub:'Images of the Amphitheatrum Flavium',\
-    g1:'Exterior View', g2:'Arena Interior', g3:'Sunset', g4:'Architectural Details', g5:'Historic Arches',\
-    faq_title:'Frequently Asked Questions', faq_sub:'Everything you need to know before your visit',\
-    faq_q1:'How far in advance should I book?', faq_a1:'We recommend 3-5 days in low season and 7-14 in high season. VIP tickets sell out weeks in advance.',\
-    faq_q2:'Can I cancel or change my booking?', faq_a2:'Free cancellations up to 48 hours before. Rescheduling available up to 24 hours before, subject to availability.',\
-    faq_q3:'How do I receive my tickets?', faq_a3:'You\\'ll receive an email with PDF tickets and a QR code. No printing required.',\
-    faq_q4:'Are there group discounts?', faq_a4:'Groups of 15+: 15% discount. Schools with accreditation: up to 25%. Contact us for group bookings.',\
-    faq_q5:'Is the site accessible for reduced mobility?', faq_a5:'Wheelchair access on the ground floor and arena. Contact us to coordinate your visit.',\
-    footer_note:'Official ticket service \'b7 Rome, Italy', footer_terms:'Terms', footer_privacy:'Privacy', footer_contact:'Contact', footer_access:'Accessibility', footer_legal:'Independent intermediary service.'\
-  \},\
-  it: \{\
-    nav_tickets:'Biglietti', nav_info:'Storia', nav_gallery:'Galleria', nav_faq:'FAQ',\
-    hero_label:'Roma \'b7 Anno Domini LXXX', hero_title:'COLOSSEO', hero_sub:'Anfiteatro Flavio \'97 Roma, Italia', hero_cta:'Prenota Biglietti',\
-    tickets_title:'Biglietti & Esperienze', tickets_sub:'Scegli il tuo modo di vivere la storia',\
-    t1_type:'Accesso Standard', t1_name:'Biglietto Classico', t1_desc:'La visita essenziale: Colosseo, Foro Romano e Palatino. Tutto quello che serve per vivere la Roma antica.',\
-    t1_i1:'Accesso al Colosseo (aree generali)', t1_i2:'Foro Romano e Monte Palatino', t1_i3:'Ingresso con orario prenotato', t1_i4:'Valido 24 ore \'b7 Senza fila alla cassa',\
-    t2_type:'Esperienza Completa', t2_name:'Colosseo + Piano Arena', t2_desc:'Cammina sul pavimento dove combattevano i gladiatori. Accesso al leggendario piano dell\\'arena, il posto pi\'f9 fotografato del Colosseo.',\
-    t2_i1:'Tutto del Biglietto Classico', t2_i2:'Piano Arena (arena floor)', t2_i3:'Accesso prioritario senza fila', t2_i4:'Disponibile solo con prenotazione anticipata',\
-    t3_type:'Tour VIP con Guida', t3_name:'Arena + Tour Guidato', t3_desc:'L\\'esperienza pi\'f9 completa: Piano Arena pi\'f9 una guida esperta certificata in piccoli gruppi. Vedi tutto, non perdi nulla.',\
-    t3_i1:'Tutto dell\\'Esperienza Completa', t3_i2:'Guida esperta certificata inclusa', t3_i3:'Piccoli gruppi (max. 25 persone)', t3_i4:'Durata circa 2 ore',\
-    per_adult:'/ adulto', t1_note:'Under 18: \'8013 \'b7 Under 6: gratis', t2_note:'Under 18: \'8017 \'b7 Under 6: gratis', t3_note:'Under 18: \'8023 \'b7 Under 6: gratis',\
-    select_btn:'Seleziona', booking_title:'Completa la Prenotazione',\
-    form_date:'Data della visita', form_adults:'Adulti', form_children:'Bambini (6-17)', form_infants:'Neonati (0-5)', form_time:'Orario di ingresso', form_name:'Nome completo', form_email:'Indirizzo email',\
-    order_type:'Tipo:', order_date:'Data:', order_time:'Orario:', order_qty:'Biglietti:', order_total:'Totale:',\
-    proceed_pay:'Procedi al pagamento \uc0\u8594 ', card_label:'Dati della carta', secure_msg:'Pagamento sicuro elaborato da Stripe. Non conserviamo i dati della carta.', pay_btn:'Conferma e Paga',\
-    info_title:'Il Colosseo di Roma', info_sub:'Meraviglia del mondo antico',\
-    info_h1:'Storia & Costruzione', info_h2:'Informazioni Pratiche',\
-    info_p1:'Il Colosseo, noto nell\\'antichit\'e0 come Anfiteatro Flavio, fu costruito tra il 70 e l\\'80 d.C. sotto gli imperatori Vespasiano e Tito.',\
-    info_p2:'Per oltre quattro secoli fu il palcoscenico dei grandi spettacoli pubblici di Roma: combattimenti tra gladiatori, cacce ad animali esotici e rappresentazioni di famose battaglie.',\
-    info_p3:'<strong style="color:var(--gold)">Orario:</strong> Tutti i giorni dalle 9:00 alle 19:00 (ultimo ingresso 18:00).',\
-    info_p4:'<strong style="color:var(--gold)">Come arrivare:</strong> Metro linea B, fermata Colosseo.',\
-    info_p5:'<strong style="color:var(--gold)">Consigli:</strong> Prenota con almeno 3 giorni di anticipo in alta stagione.',\
-    info_p6:'<strong style="color:var(--gold)">Indirizzo:</strong> Piazza del Colosseo, 1, 00184 Roma RM, Italia.',\
-    stat1:'Spettatori', stat2:'Inaugurazione', stat3:'Lunghezza', stat4:'Altezza',\
-    gallery_title:'Galleria', gallery_sub:'Immagini dell\\'Anfiteatro Flavio',\
-    g1:'Vista Esterna', g2:'Interno Arena', g3:'Tramonto', g4:'Dettagli Architettonici', g5:'Archi Storici',\
-    faq_title:'Domande Frequenti', faq_sub:'Tutto quello che devi sapere prima di visitare',\
-    faq_q1:'Con quanto anticipo devo prenotare?', faq_a1:'Consigliamo 3-5 giorni in bassa stagione e 7-14 in alta. I biglietti VIP si esauriscono settimane prima.',\
-    faq_q2:'Posso annullare o modificare la prenotazione?', faq_a2:'Cancellazioni gratuite fino a 48 ore prima. Riprogrammazione senza costi fino a 24 ore prima.',\
-    faq_q3:'Come ricevo i biglietti?', faq_a3:'Riceverai un\\'email con PDF e codice QR. Non \'e8 necessario stampare.',\
-    faq_q4:'Ci sono sconti per gruppi?', faq_a4:'Gruppi +15 persone: 15% di sconto. Scuole: fino al 25%. Contattaci per prenotazioni di gruppo.',\
-    faq_q5:'Il sito \'e8 accessibile per mobilit\'e0 ridotta?', faq_a5:'Accesso per sedie a rotelle al piano terra e arena. Contattaci per coordinare la visita.',\
-    footer_note:'Servizio biglietteria \'b7 Roma, Italia', footer_terms:'Termini', footer_privacy:'Privacy', footer_contact:'Contatti', footer_access:'Accessibilit\'e0', footer_legal:'Servizio di intermediazione indipendente.'\
-  \}\
-\};\
-\
-let currentLang = 'es';\
-function setLang(lang) \{\
-  currentLang = lang;\
-  document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));\
-  document.querySelector(`.lang-btn[onclick="setLang('$\{lang\}')"]`).classList.add('active');\
-  document.querySelectorAll('[data-i18n]').forEach(el => \{\
-    const key = el.getAttribute('data-i18n');\
-    if (i18n[lang][key]) el.innerHTML = i18n[lang][key];\
-  \});\
-  // Update booking box label\
-  const bb = document.querySelector('.booking-box::before');\
-  document.querySelector('.booking-box').style.setProperty('--label',\
-    lang === 'es' ? '"\'97 RESERVA TU LUGAR \'97"' :\
-    lang === 'en' ? '"\'97 BOOK YOUR SPOT \'97"' :\
-    '"\'97 PRENOTA IL TUO POSTO \'97"'\
-  );\
-\}\
-\
-// =====================\
-// TICKET SELECTION\
-// =====================\
-let selectedTicket = null;\
-let selectedPrice = 0;\
-let selectedTime = null;\
-\
-const ticketNames = \{\
-  standard: \{ es: 'Entrada Cl\'e1sica', en: 'Classic Entry', it: 'Biglietto Classico' \},\
-  full: \{ es: 'Coliseo + Arena Floor', en: 'Colosseum + Arena Floor', it: 'Colosseo + Piano Arena' \},\
-  vip: \{ es: 'Arena + Tour Guiado', en: 'Arena + Expert Guide', it: 'Arena + Tour Guidato' \}\
-\};\
-\
-function selectTicket(type, price) \{\
-  selectedTicket = type;\
-  selectedPrice = price;\
-  const form = document.getElementById('booking-form');\
-  form.style.display = 'block';\
-  form.scrollIntoView(\{ behavior: 'smooth', block: 'start' \});\
-  showToast('\uc0\u10022  ' + (ticketNames[type][currentLang] || type) + ' \'97 \'80' + price);\
-  updateTotal();\
-\}\
-\
-function selectTime(el) \{\
-  if (el.classList.contains('sold-out')) return;\
-  document.querySelectorAll('.timeslot').forEach(t => t.classList.remove('selected'));\
-  el.classList.add('selected');\
-  selectedTime = el.textContent;\
-  updateTotal();\
-\}\
-\
-function updateTotal() \{\
-  if (!selectedTicket) return;\
-  const adults = parseInt(document.getElementById('qty-adults').value) || 0;\
-  const children = parseInt(document.getElementById('qty-children').value) || 0;\
-  const childPrice = selectedTicket === 'vip' ? 23 : (selectedTicket === 'full' ? 17 : 13);\
-  const total = (adults * selectedPrice) + (children * childPrice);\
-  const summary = document.getElementById('order-summary');\
-  summary.style.display = 'block';\
-  document.getElementById('sum-type').textContent = ticketNames[selectedTicket][currentLang];\
-  document.getElementById('sum-date').textContent = document.getElementById('visit-date').value || '\'97';\
-  document.getElementById('sum-time').textContent = selectedTime || '\'97';\
-  document.getElementById('sum-qty').textContent = adults + ' adulto(s)' + (children > 0 ? `, $\{children\} ni\'f1o(s)` : '');\
-  document.getElementById('sum-total').textContent = '\'80' + total;\
-\}\
-\
-function proceedToPayment() \{\
-  const name = document.getElementById('visitor-name').value;\
-  const email = document.getElementById('visitor-email').value;\
-  const date = document.getElementById('visit-date').value;\
-  if (!name || !email || !date || !selectedTime) \{\
-    showToast('\uc0\u9888  Complet\'e1 todos los campos y eleg\'ed un horario');\
-    return;\
-  \}\
-  document.getElementById('stripe-section').classList.add('visible');\
-  document.getElementById('stripe-section').scrollIntoView(\{ behavior: 'smooth' \});\
-  initStripe();\
-\}\
-\
-// =====================\
-// STRIPE INTEGRATION\
-// =====================\
-let stripe, cardElement;\
-let stripeInitialized = false;\
-\
-function initStripe() \{\
-  if (stripeInitialized) return;\
-  // IMPORTANT: Replace with your actual Stripe publishable key\
-  stripe = Stripe('pk_test_REPLACE_WITH_YOUR_STRIPE_PUBLISHABLE_KEY');\
-  const elements = stripe.elements(\{\
-    fonts: [\{ cssSrc: 'https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400&display=swap' \}]\
-  \});\
-  cardElement = elements.create('card', \{\
-    style: \{\
-      base: \{\
-        color: '#f5ead6',\
-        fontFamily: '"EB Garamond", Georgia, serif',\
-        fontSize: '17px',\
-        '::placeholder': \{ color: '#8b7355' \}\
-      \},\
-      invalid: \{ color: '#e74c3c' \}\
-    \}\
-  \});\
-  cardElement.mount('#card-element');\
-  cardElement.on('change', e => \{\
-    document.getElementById('payment-errors').textContent = e.error ? e.error.message : '';\
-  \});\
-  stripeInitialized = true;\
-\}\
-\
-async function submitPayment() \{\
-  const btn = document.getElementById('pay-btn');\
-  btn.textContent = '\uc0\u9203  Procesando...';\
-  btn.style.opacity = '0.7';\
-  btn.disabled = true;\
-\
-  // In production: call your backend to create a PaymentIntent\
-  // and get the client_secret. Example:\
-  //\
-  // const res = await fetch('/api/create-payment-intent', \{\
-  //   method: 'POST',\
-  //   headers: \{ 'Content-Type': 'application/json' \},\
-  //   body: JSON.stringify(\{\
-  //     amount: totalInCents,\
-  //     currency: 'eur',\
-  //     ticket: selectedTicket,\
-  //     name: document.getElementById('visitor-name').value,\
-  //     email: document.getElementById('visitor-email').value\
-  //   \})\
-  // \});\
-  // const \{ clientSecret \} = await res.json();\
-  //\
-  // const \{ error, paymentIntent \} = await stripe.confirmCardPayment(clientSecret, \{\
-  //   payment_method: \{ card: cardElement \}\
-  // \});\
-\
-const adults = parseInt(document.getElementById('qty-adults').value);\
-const children = parseInt(document.getElementById('qty-children').value) || 0;\
-const childPrice = selectedTicket === 'vip' ? 23 : (selectedTicket === 'full' ? 17 : 13);\
-const total = (adults * selectedPrice) + (children * childPrice);\
-\
-const res = await fetch('https://colosseum-backend-new.vercel.app/api/create-payment-intent', \{\
-  method: 'POST',\
-  headers: \{ 'Content-Type': 'application/json' \},\
-  body: JSON.stringify(\{\
-    ticket_type: selectedTicket,\
-    qty_adults: adults,\
-    qty_children: children,\
-    qty_infants: parseInt(document.getElementById('qty-infants').value) || 0,\
-    visit_date: document.getElementById('visit-date').value,\
-    time_slot: selectedTime,\
-    customer_name: document.getElementById('visitor-name').value,\
-    email: document.getElementById('visitor-email').value,\
-    amount: total\
-  \})\
-\});\
-\
-const \{ clientSecret \} = await res.json();\
-\
-const \{ error, paymentIntent \} = await stripe.confirmCardPayment(clientSecret, \{\
-  payment_method: \{ card: cardElement \}\
-\});\
-\
-if (error) \{\
-  document.getElementById('payment-errors').textContent = error.message;\
-  btn.textContent = i18n[currentLang]['pay_btn'] || 'Confirmar y Pagar';\
-  btn.style.opacity = '1';\
-  btn.disabled = false;\
-  return;\
-\}\
-\
-if (paymentIntent.status === 'succeeded') \{\
-  document.getElementById('stripe-section').innerHTML = `\
-    <div style="text-align:center;padding:30px 0">\
-      <div style="font-size:48px;margin-bottom:16px">\uc0\u10022 </div>\
-      <div style="font-family:'Cinzel',serif;font-size:20px;color:var(--gold);margin-bottom:8px">\'a1Reserva Confirmada!</div>\
-      <div style="color:var(--stone);font-size:15px">Tus entradas fueron enviadas a $\{document.getElementById('visitor-email').value\}</div>\
-    </div>\
-  `;\
-\}\
-\
-// =====================\
-// FAQ ACCORDION\
-// =====================\
-function toggleFaq(el) \{\
-  const item = el.closest('.faq-item');\
-  item.classList.toggle('open');\
-\}\
-\
-// =====================\
-// TOAST\
-// =====================\
-function showToast(msg) \{\
-  const toast = document.getElementById('toast');\
-  toast.textContent = msg;\
-  toast.classList.add('show');\
-  setTimeout(() => toast.classList.remove('show'), 3000);\
-\}\
-\
-// Scroll update for date field\
-document.getElementById('visit-date').addEventListener('input', updateTotal);\
-</script>\
-</body>\
-</html>\
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background-color: #1a0f0a;
+    color: var(--ink);
+    font-family: 'EB Garamond', Georgia, serif;
+    font-size: 18px;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* GRAIN TEXTURE OVERLAY */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.03;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  }
+
+  /* LANGUAGE SWITCHER */
+  #lang-bar {
+    background: var(--ink);
+    padding: 8px 40px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 20px;
+    border-bottom: 1px solid var(--gold);
+  }
+  .lang-btn {
+    background: none;
+    border: none;
+    color: var(--stone);
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 2px;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: color 0.2s;
+  }
+  .lang-btn:hover, .lang-btn.active { color: var(--gold); }
+  .lang-btn.active { border-bottom: 1px solid var(--gold); }
+
+  /* HERO */
+  #hero {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background:
+      linear-gradient(to bottom, rgba(26,15,10,0.55) 0%, rgba(26,15,10,0.3) 50%, rgba(26,15,10,0.85) 100%),
+      url('https://upload.wikimedia.org/wikipedia/commons/thumb/d/de/Colosseo_2020.jpg/1600px-Colosseo_2020.jpg') center/cover no-repeat;
+    text-align: center;
+    padding: 80px 20px;
+  }
+  #hero::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at center, transparent 40%, rgba(26,15,10,0.6) 100%);
+    pointer-events: none;
+  }
+  .hero-content { position: relative; z-index: 2; }
+  .hero-label {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 5px;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    opacity: 0;
+    animation: fadeUp 1s ease 0.3s forwards;
+  }
+  .hero-title {
+    font-family: 'Cinzel', serif;
+    font-size: clamp(42px, 8vw, 90px);
+    font-weight: 800;
+    color: var(--parchment);
+    line-height: 1.05;
+    text-shadow: 0 4px 40px rgba(0,0,0,0.7);
+    opacity: 0;
+    animation: fadeUp 1s ease 0.5s forwards;
+  }
+  .hero-sub {
+    font-family: 'EB Garamond', serif;
+    font-size: clamp(16px, 2.5vw, 22px);
+    font-style: italic;
+    color: var(--stone);
+    margin-top: 16px;
+    opacity: 0;
+    animation: fadeUp 1s ease 0.7s forwards;
+  }
+  .hero-divider {
+    width: 120px;
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--gold), transparent);
+    margin: 30px auto;
+    opacity: 0;
+    animation: fadeUp 1s ease 0.9s forwards;
+  }
+  .btn-primary {
+    display: inline-block;
+    font-family: 'Cinzel', serif;
+    font-size: 13px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--ink);
+    background: linear-gradient(135deg, var(--gold), var(--gold-light));
+    border: none;
+    padding: 16px 40px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.3s;
+    clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
+    opacity: 0;
+    animation: fadeUp 1s ease 1.1s forwards;
+  }
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(201,168,76,0.4);
+  }
+
+  /* SECTIONS */
+  section {
+    padding: 80px 40px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .section-wrap {
+    background: var(--parchment);
+    position: relative;
+  }
+  .section-wrap::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4'%3E%3Crect width='4' height='4' fill='%23f5ead6'/%3E%3Crect width='1' height='1' x='0' y='0' fill='%23e8d5b0' opacity='0.4'/%3E%3C/svg%3E");
+    opacity: 0.5;
+    pointer-events: none;
+  }
+
+  .section-title {
+    font-family: 'Cinzel', serif;
+    font-size: clamp(28px, 4vw, 46px);
+    font-weight: 600;
+    color: var(--ink);
+    text-align: center;
+    margin-bottom: 10px;
+    position: relative;
+  }
+  .section-title::after {
+    content: '';
+    display: block;
+    width: 80px;
+    height: 2px;
+    background: linear-gradient(to right, transparent, var(--gold), transparent);
+    margin: 16px auto 0;
+  }
+  .section-subtitle {
+    text-align: center;
+    color: var(--stone-dark);
+    font-style: italic;
+    margin-bottom: 50px;
+    font-size: 16px;
+  }
+
+  /* NAV */
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(26,15,10,0.97);
+    border-bottom: 1px solid rgba(201,168,76,0.3);
+    padding: 0 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+    backdrop-filter: blur(10px);
+  }
+  .nav-logo {
+    font-family: 'Cinzel', serif;
+    font-size: 18px;
+    color: var(--gold);
+    text-decoration: none;
+    letter-spacing: 2px;
+  }
+  .nav-links { display: flex; gap: 32px; list-style: none; }
+  .nav-links a {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--stone);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--gold); }
+
+  /* TICKET SECTION */
+  .ticket-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
+    margin-top: 40px;
+  }
+
+  .ticket-card {
+    background: var(--ink);
+    border: 1px solid rgba(201,168,76,0.3);
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.3s, box-shadow 0.3s;
+  }
+  .ticket-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(to right, var(--gold), var(--gold-light));
+  }
+  .ticket-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 50px rgba(0,0,0,0.5);
+  }
+  .ticket-card.featured {
+    border-color: var(--gold);
+    transform: scale(1.02);
+  }
+  .ticket-card.featured::after {
+    content: attr(data-badge);
+    position: absolute;
+    top: 16px; right: -28px;
+    background: var(--gold);
+    color: var(--ink);
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: 1px;
+    padding: 4px 40px;
+    transform: rotate(45deg);
+  }
+  .ticket-header {
+    padding: 28px 28px 16px;
+    border-bottom: 1px solid rgba(201,168,76,0.15);
+  }
+  .ticket-type {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .ticket-name {
+    font-family: 'Cinzel', serif;
+    font-size: 22px;
+    color: var(--parchment);
+    margin-bottom: 6px;
+  }
+  .ticket-desc {
+    font-size: 14px;
+    color: var(--stone);
+    font-style: italic;
+    line-height: 1.5;
+  }
+  .ticket-body { padding: 20px 28px; }
+  .ticket-includes {
+    list-style: none;
+    margin-bottom: 20px;
+  }
+  .ticket-includes li {
+    font-size: 14px;
+    color: var(--stone);
+    padding: 5px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .ticket-includes li::before {
+    content: '✦';
+    color: var(--gold);
+    font-size: 10px;
+    flex-shrink: 0;
+  }
+  .ticket-price {
+    font-family: 'Cinzel', serif;
+    font-size: 32px;
+    color: var(--parchment);
+    margin-bottom: 4px;
+  }
+  .ticket-price span {
+    font-size: 16px;
+    color: var(--stone);
+    font-family: 'EB Garamond', serif;
+  }
+  .ticket-price-note {
+    font-size: 12px;
+    color: var(--stone-dark);
+    margin-bottom: 16px;
+  }
+
+  /* BOOKING FORM */
+  .booking-box {
+    background: rgba(26,15,10,0.95);
+    border: 1px solid rgba(201,168,76,0.3);
+    padding: 40px;
+    margin-top: 60px;
+    position: relative;
+  }
+  .booking-box::before {
+    content: '— RESERVA TU LUGAR —';
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: 4px;
+    color: var(--gold);
+    position: absolute;
+    top: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--parchment);
+    padding: 0 20px;
+    white-space: nowrap;
+  }
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .form-group.full { grid-column: 1 / -1; }
+  label {
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+  select, input[type="text"], input[type="email"], input[type="number"] {
+    background: rgba(245,234,214,0.06);
+    border: 1px solid rgba(201,168,76,0.3);
+    color: var(--parchment);
+    font-family: 'EB Garamond', serif;
+    font-size: 16px;
+    padding: 12px 16px;
+    outline: none;
+    transition: border-color 0.2s;
+    width: 100%;
+  }
+  select:focus, input:focus { border-color: var(--gold); }
+  select option { background: var(--ink); }
+
+  .timeslots {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 10px;
+    margin-top: 4px;
+  }
+  .timeslot {
+    border: 1px solid rgba(201,168,76,0.3);
+    background: rgba(245,234,214,0.04);
+    color: var(--stone);
+    font-family: 'Cinzel', serif;
+    font-size: 13px;
+    padding: 10px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .timeslot:hover { border-color: var(--gold); color: var(--gold); }
+  .timeslot.selected { background: var(--gold); color: var(--ink); border-color: var(--gold); }
+  .timeslot.sold-out { opacity: 0.35; cursor: not-allowed; text-decoration: line-through; }
+
+  /* STRIPE PAYMENT */
+  #stripe-section {
+    margin-top: 30px;
+    display: none;
+  }
+  #stripe-section.visible { display: block; }
+  #card-element {
+    background: rgba(245,234,214,0.06);
+    border: 1px solid rgba(201,168,76,0.3);
+    padding: 14px 16px;
+    color: var(--parchment);
+  }
+  #payment-errors {
+    color: #e74c3c;
+    font-size: 14px;
+    margin-top: 8px;
+    min-height: 20px;
+  }
+  #order-summary {
+    background: rgba(201,168,76,0.08);
+    border-left: 3px solid var(--gold);
+    padding: 16px 20px;
+    margin: 20px 0;
+    font-size: 15px;
+    color: var(--parchment);
+  }
+  .order-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 0;
+  }
+  .order-total {
+    font-family: 'Cinzel', serif;
+    font-size: 18px;
+    color: var(--gold);
+    border-top: 1px solid rgba(201,168,76,0.3);
+    margin-top: 8px;
+    padding-top: 8px;
+  }
+
+  /* INFO SECTION */
+  .info-columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    align-items: start;
+  }
+  .info-block h3 {
+    font-family: 'Cinzel', serif;
+    font-size: 20px;
+    color: var(--ink);
+    margin-bottom: 16px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--stone);
+  }
+  .info-block p {
+    color: var(--ink-light);
+    font-size: 16px;
+    line-height: 1.8;
+    margin-bottom: 16px;
+  }
+  .info-stat {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 24px;
+  }
+  .stat-box {
+    background: var(--ink);
+    color: var(--parchment);
+    padding: 20px;
+    text-align: center;
+  }
+  .stat-num {
+    font-family: 'Cinzel', serif;
+    font-size: 32px;
+    color: var(--gold);
+    display: block;
+  }
+  .stat-label {
+    font-size: 12px;
+    color: var(--stone);
+    letter-spacing: 1px;
+    margin-top: 4px;
+    display: block;
+  }
+
+  /* GALLERY */
+  .gallery-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    grid-template-rows: 240px 240px;
+    gap: 8px;
+  }
+  .gallery-item {
+    overflow: hidden;
+    position: relative;
+    cursor: pointer;
+  }
+  .gallery-item:first-child { grid-row: 1 / 3; }
+  .gallery-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s;
+    filter: sepia(30%) contrast(1.05);
+  }
+  .gallery-item:hover img { transform: scale(1.05); filter: sepia(10%); }
+  .gallery-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(26,15,10,0.7), transparent);
+    opacity: 0;
+    transition: opacity 0.3s;
+    display: flex;
+    align-items: flex-end;
+    padding: 16px;
+  }
+  .gallery-item:hover .gallery-overlay { opacity: 1; }
+  .gallery-caption {
+    font-family: 'Cinzel', serif;
+    font-size: 12px;
+    color: var(--gold);
+    letter-spacing: 2px;
+  }
+
+  /* FAQ */
+  .faq-list { max-width: 800px; margin: 0 auto; }
+  .faq-item {
+    border-bottom: 1px solid var(--stone);
+    overflow: hidden;
+  }
+  .faq-q {
+    font-family: 'Cinzel', serif;
+    font-size: 16px;
+    color: var(--ink);
+    padding: 20px 0;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    user-select: none;
+  }
+  .faq-q::after {
+    content: '✦';
+    color: var(--gold);
+    font-size: 12px;
+    transition: transform 0.3s;
+    flex-shrink: 0;
+  }
+  .faq-item.open .faq-q::after { transform: rotate(45deg); }
+  .faq-a {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s ease;
+    color: var(--ink-light);
+    font-size: 16px;
+    line-height: 1.8;
+  }
+  .faq-item.open .faq-a { max-height: 300px; }
+  .faq-a p { padding-bottom: 20px; }
+
+  /* FOOTER */
+  footer {
+    background: var(--ink);
+    border-top: 1px solid rgba(201,168,76,0.3);
+    padding: 50px 40px 30px;
+    text-align: center;
+  }
+  .footer-logo {
+    font-family: 'Cinzel', serif;
+    font-size: 28px;
+    color: var(--gold);
+    margin-bottom: 10px;
+  }
+  .footer-note {
+    font-size: 13px;
+    color: var(--stone-dark);
+    margin-bottom: 30px;
+    font-style: italic;
+  }
+  .footer-links {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    flex-wrap: wrap;
+    margin-bottom: 30px;
+    list-style: none;
+  }
+  .footer-links a {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--stone);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  .footer-links a:hover { color: var(--gold); }
+  .footer-bottom {
+    font-size: 12px;
+    color: var(--stone-dark);
+    border-top: 1px solid rgba(255,255,255,0.06);
+    padding-top: 20px;
+  }
+
+  /* TOAST */
+  #toast {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    background: var(--ink);
+    border: 1px solid var(--gold);
+    color: var(--parchment);
+    padding: 16px 24px;
+    font-family: 'Cinzel', serif;
+    font-size: 13px;
+    letter-spacing: 1px;
+    transform: translateY(100px);
+    opacity: 0;
+    transition: all 0.4s;
+    z-index: 9999;
+  }
+  #toast.show { transform: translateY(0); opacity: 1; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (max-width: 768px) {
+    nav .nav-links { display: none; }
+    .form-grid { grid-template-columns: 1fr; }
+    .info-columns { grid-template-columns: 1fr; }
+    .gallery-grid { grid-template-columns: 1fr 1fr; grid-template-rows: auto; }
+    .gallery-item:first-child { grid-row: auto; grid-column: 1 / -1; }
+    section { padding: 60px 20px; }
+    .booking-box { padding: 30px 20px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- LANGUAGE BAR -->
+<div id="lang-bar">
+  <button class="lang-btn active" onclick="setLang('es')">ES</button>
+  <button class="lang-btn" onclick="setLang('en')">EN</button>
+  <button class="lang-btn" onclick="setLang('it')">IT</button>
+</div>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">COLOSSEUM</a>
+  <ul class="nav-links">
+    <li><a href="#tickets" data-i18n="nav_tickets">Entradas</a></li>
+    <li><a href="#info" data-i18n="nav_info">Historia</a></li>
+    <li><a href="#gallery" data-i18n="nav_gallery">Galería</a></li>
+    <li><a href="#faq" data-i18n="nav_faq">FAQ</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<div id="hero">
+  <div class="hero-content">
+    <p class="hero-label" data-i18n="hero_label">Roma · Anno Domini LXXX</p>
+    <h1 class="hero-title" data-i18n="hero_title">COLOSSEUM</h1>
+    <p class="hero-sub" data-i18n="hero_sub">Amphitheatrum Flavium — Roma, Italia</p>
+    <div class="hero-divider"></div>
+    <a href="#tickets" class="btn-primary" data-i18n="hero_cta">Reservar Entradas</a>
+  </div>
+</div>
+
+<!-- TICKETS -->
+<div class="section-wrap" id="tickets">
+  <section>
+    <h2 class="section-title" data-i18n="tickets_title">Entradas & Experiencias</h2>
+    <p class="section-subtitle" data-i18n="tickets_sub">Elige tu forma de vivir la historia</p>
+
+    <div class="ticket-grid">
+      <!-- STANDARD -->
+      <div class="ticket-card" data-ticket="standard" data-price="23">
+        <div class="ticket-header">
+          <div class="ticket-type" data-i18n="t1_type">Acceso Estándar</div>
+          <div class="ticket-name" data-i18n="t1_name">Entrada Clásica</div>
+          <div class="ticket-desc" data-i18n="t1_desc">La visita esencial: Coliseo, Foro Romano y Palatino. Todo lo que necesitás para vivir Roma antigua.</div>
+        </div>
+        <div class="ticket-body">
+          <ul class="ticket-includes">
+            <li data-i18n="t1_i1">Acceso al Coliseo (áreas generales)</li>
+            <li data-i18n="t1_i2">Foro Romano y Monte Palatino</li>
+            <li data-i18n="t1_i3">Entrada con horario reservado</li>
+            <li data-i18n="t1_i4">Válido 24 hs · Sin cola en taquilla</li>
+          </ul>
+          <div class="ticket-price">€23 <span data-i18n="per_adult">/ adulto</span></div>
+          <div class="ticket-price-note" data-i18n="t1_note">Menores de 18: €13 · Menores de 6: gratis</div>
+          <button class="btn-primary" style="width:100%;text-align:center" onclick="selectTicket('standard', 23)" data-i18n="select_btn">Seleccionar</button>
+        </div>
+      </div>
+
+      <!-- FULL EXPERIENCE -->
+      <div class="ticket-card featured" data-badge="★ POPULAR" data-ticket="full" data-price="27">
+        <div class="ticket-header">
+          <div class="ticket-type" data-i18n="t2_type">Experiencia Completa</div>
+          <div class="ticket-name" data-i18n="t2_name">Coliseo + Arena Floor</div>
+          <div class="ticket-desc" data-i18n="t2_desc">Pisá el suelo donde lucharon los gladiadores. Acceso al mítico piso de la arena, el lugar más fotografiado del Coliseo.</div>
+        </div>
+        <div class="ticket-body">
+          <ul class="ticket-includes">
+            <li data-i18n="t2_i1">Todo lo del plan Clásico</li>
+            <li data-i18n="t2_i2">Suelo de la Arena (arena floor)</li>
+            <li data-i18n="t2_i3">Acceso prioritario sin cola</li>
+            <li data-i18n="t2_i4">Disponible solo con reserva previa</li>
+          </ul>
+          <div class="ticket-price">€27 <span data-i18n="per_adult">/ adulto</span></div>
+          <div class="ticket-price-note" data-i18n="t2_note">Menores de 18: €17 · Menores de 6: gratis</div>
+          <button class="btn-primary" style="width:100%;text-align:center" onclick="selectTicket('full', 27)" data-i18n="select_btn">Seleccionar</button>
+        </div>
+      </div>
+
+      <!-- VIP -->
+      <div class="ticket-card" data-ticket="vip" data-price="37">
+        <div class="ticket-header">
+          <div class="ticket-type" data-i18n="t3_type">Tour VIP con Guía</div>
+          <div class="ticket-name" data-i18n="t3_name">Arena + Tour Guiado</div>
+          <div class="ticket-desc" data-i18n="t3_desc">La experiencia más completa: Arena Floor + guía experto en grupos reducidos. Sin dudas, sin perderse nada.</div>
+        </div>
+        <div class="ticket-body">
+          <ul class="ticket-includes">
+            <li data-i18n="t3_i1">Todo lo del plan Completo</li>
+            <li data-i18n="t3_i2">Guía experto certificado incluido</li>
+            <li data-i18n="t3_i3">Grupos reducidos (máx. 25 personas)</li>
+            <li data-i18n="t3_i4">Duración aprox. 2 horas</li>
+          </ul>
+          <div class="ticket-price">€37 <span data-i18n="per_adult">/ adulto</span></div>
+          <div class="ticket-price-note" data-i18n="t3_note">Menores de 18: €23 · Menores de 6: gratis</div>
+          <button class="btn-primary" style="width:100%;text-align:center" onclick="selectTicket('vip', 37)" data-i18n="select_btn">Seleccionar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- BOOKING FORM -->
+    <div class="booking-box" id="booking-form" style="display:none">
+      <h3 style="font-family:'Cinzel',serif;font-size:20px;color:var(--parchment);margin-bottom:24px;text-align:center" data-i18n="booking_title">Completa tu Reserva</h3>
+      <div class="form-grid">
+        <div class="form-group">
+          <label data-i18n="form_date">Fecha de visita</label>
+          <input type="text" id="visit-date" placeholder="DD / MM / AAAA">
+        </div>
+        <div class="form-group">
+          <label data-i18n="form_adults">Adultos</label>
+          <input type="number" id="qty-adults" min="1" max="20" value="1" onchange="updateTotal()">
+        </div>
+        <div class="form-group">
+          <label data-i18n="form_children">Niños (6-17)</label>
+          <input type="number" id="qty-children" min="0" max="20" value="0" onchange="updateTotal()">
+        </div>
+        <div class="form-group">
+          <label data-i18n="form_infants">Infantes (0-5)</label>
+          <input type="number" id="qty-infants" min="0" max="10" value="0">
+        </div>
+        <div class="form-group full">
+          <label data-i18n="form_time">Horario de entrada</label>
+          <div class="timeslots" id="timeslots">
+            <div class="timeslot" onclick="selectTime(this)">09:00</div>
+            <div class="timeslot" onclick="selectTime(this)">09:30</div>
+            <div class="timeslot" onclick="selectTime(this)">10:00</div>
+            <div class="timeslot sold-out">10:30</div>
+            <div class="timeslot" onclick="selectTime(this)">11:00</div>
+            <div class="timeslot" onclick="selectTime(this)">11:30</div>
+            <div class="timeslot sold-out">12:00</div>
+            <div class="timeslot" onclick="selectTime(this)">12:30</div>
+            <div class="timeslot" onclick="selectTime(this)">13:00</div>
+            <div class="timeslot" onclick="selectTime(this)">13:30</div>
+            <div class="timeslot" onclick="selectTime(this)">14:00</div>
+            <div class="timeslot" onclick="selectTime(this)">14:30</div>
+            <div class="timeslot" onclick="selectTime(this)">15:00</div>
+            <div class="timeslot sold-out">15:30</div>
+            <div class="timeslot" onclick="selectTime(this)">16:00</div>
+            <div class="timeslot" onclick="selectTime(this)">16:30</div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label data-i18n="form_name">Nombre completo</label>
+          <input type="text" id="visitor-name" placeholder="John Smith">
+        </div>
+        <div class="form-group">
+          <label data-i18n="form_email">Correo electrónico</label>
+          <input type="email" id="visitor-email" placeholder="john@email.com">
+        </div>
+      </div>
+
+      <!-- ORDER SUMMARY -->
+      <div id="order-summary" style="display:none;margin-top:24px">
+        <div class="order-row"><span data-i18n="order_type">Tipo:</span><span id="sum-type">—</span></div>
+        <div class="order-row"><span data-i18n="order_date">Fecha:</span><span id="sum-date">—</span></div>
+        <div class="order-row"><span data-i18n="order_time">Horario:</span><span id="sum-time">—</span></div>
+        <div class="order-row"><span data-i18n="order_qty">Entradas:</span><span id="sum-qty">—</span></div>
+        <div class="order-row order-total"><span data-i18n="order_total">Total:</span><span id="sum-total">€0</span></div>
+      </div>
+
+      <button class="btn-primary" style="margin-top:20px" onclick="proceedToPayment()" data-i18n="proceed_pay">Continuar al pago →</button>
+
+      <!-- STRIPE PAYMENT -->
+      <div id="stripe-section">
+        <div style="margin:24px 0 12px">
+          <label style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:2px;color:var(--gold);display:block;margin-bottom:10px" data-i18n="card_label">Datos de la tarjeta</label>
+          <div id="card-element"></div>
+          <div id="payment-errors"></div>
+        </div>
+        <div style="font-size:12px;color:var(--stone-dark);margin-bottom:20px;display:flex;align-items:center;gap:8px">
+          <span>🔒</span>
+          <span data-i18n="secure_msg">Pago seguro procesado por Stripe. No almacenamos datos de tarjeta.</span>
+        </div>
+        <button class="btn-primary" id="pay-btn" onclick="submitPayment()" data-i18n="pay_btn">Confirmar y Pagar</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- INFO / HISTORIA -->
+<div style="background:#1a0f0a" id="info">
+  <section>
+    <h2 class="section-title" style="color:var(--parchment)" data-i18n="info_title">El Coliseo de Roma</h2>
+    <p class="section-subtitle" style="color:var(--stone)" data-i18n="info_sub">Maravilla del mundo antiguo</p>
+    <div class="info-columns">
+      <div class="info-block">
+        <h3 style="color:var(--parchment);border-color:var(--stone-dark)" data-i18n="info_h1">Historia & Construcción</h3>
+        <p style="color:var(--stone)" data-i18n="info_p1">El Coliseo, conocido en la antigüedad como el Anfiteatro Flavio, fue construido entre el 70 y el 80 d.C. bajo los emperadores Vespasiano y Tito. Con capacidad para más de 50.000 espectadores, es el anfiteatro romano más grande jamás construido.</p>
+        <p style="color:var(--stone)" data-i18n="info_p2">Durante más de cuatro siglos fue el escenario de los grandes espectáculos públicos de Roma: combates de gladiadores, caza de animales exóticos, ejecuciones y representaciones de famosas batallas. Su arquitectura ha sido fuente de inspiración durante siglos.</p>
+        <div class="info-stat">
+          <div class="stat-box"><span class="stat-num">50K</span><span class="stat-label" data-i18n="stat1">Espectadores</span></div>
+          <div class="stat-box"><span class="stat-num">80 d.C.</span><span class="stat-label" data-i18n="stat2">Inauguración</span></div>
+          <div class="stat-box"><span class="stat-num">188m</span><span class="stat-label" data-i18n="stat3">Longitud</span></div>
+          <div class="stat-box"><span class="stat-num">48m</span><span class="stat-label" data-i18n="stat4">Altura</span></div>
+        </div>
+      </div>
+      <div class="info-block">
+        <h3 style="color:var(--parchment);border-color:var(--stone-dark)" data-i18n="info_h2">Información Práctica</h3>
+        <p style="color:var(--stone)" data-i18n="info_p3"><strong style="color:var(--gold)">Horario:</strong> Todos los días de 9:00 a 19:00 hs (última entrada 18:00). Horario reducido en invierno.</p>
+        <p style="color:var(--stone)" data-i18n="info_p4"><strong style="color:var(--gold)">Cómo llegar:</strong> Metro línea B, parada Colosseo. Autobús: líneas 3, 8, 60, 75, 85, 117, 175. Tren desde Termini: 2 estaciones.</p>
+        <p style="color:var(--stone)" data-i18n="info_p5"><strong style="color:var(--gold)">Recomendaciones:</strong> Reserva con al menos 3 días de antelación en temporada alta (abril-octubre). Usa calzado cómodo. No se permiten maletas grandes.</p>
+        <p style="color:var(--stone)" data-i18n="info_p6"><strong style="color:var(--gold)">Dirección:</strong> Piazza del Colosseo, 1, 00184 Roma RM, Italia.</p>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- GALLERY -->
+<div class="section-wrap" id="gallery">
+  <section>
+    <h2 class="section-title" data-i18n="gallery_title">Galería</h2>
+    <p class="section-subtitle" data-i18n="gallery_sub">Imágenes del Amphitheatrum Flavium</p>
+    <div class="gallery-grid">
+      <div class="gallery-item">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/de/Colosseo_2020.jpg/1280px-Colosseo_2020.jpg" alt="Colosseum exterior" loading="lazy">
+        <div class="gallery-overlay"><span class="gallery-caption" data-i18n="g1">Vista Exterior</span></div>
+      </div>
+      <div class="gallery-item">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/Colosseum_interior_wide-angle.jpg/800px-Colosseum_interior_wide-angle.jpg" alt="Colosseum interior" loading="lazy">
+        <div class="gallery-overlay"><span class="gallery-caption" data-i18n="g2">Interior Arena</span></div>
+      </div>
+      <div class="gallery-item">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Colosseum_in_Rome%2C_Italy_-_April_2007.jpg/800px-Colosseum_in_Rome%2C_Italy_-_April_2007.jpg" alt="Colosseum sunset" loading="lazy">
+        <div class="gallery-overlay"><span class="gallery-caption" data-i18n="g3">Atardecer</span></div>
+      </div>
+      <div class="gallery-item">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/af/All_Gizah_Pyramids.jpg/800px-All_Gizah_Pyramids.jpg" alt="Ancient Rome" loading="lazy">
+        <div class="gallery-overlay"><span class="gallery-caption" data-i18n="g4">Detalles Arquitectónicos</span></div>
+      </div>
+      <div class="gallery-item">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Colosseum_HD.jpg/800px-Colosseum_HD.jpg" alt="Colosseum HD" loading="lazy">
+        <div class="gallery-overlay"><span class="gallery-caption" data-i18n="g5">Arcos Históricos</span></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- FAQ -->
+<div style="background:#1a0f0a" id="faq">
+  <section>
+    <h2 class="section-title" style="color:var(--parchment)" data-i18n="faq_title">Preguntas Frecuentes</h2>
+    <p class="section-subtitle" style="color:var(--stone)" data-i18n="faq_sub">Todo lo que necesitás saber antes de visitar</p>
+    <div class="faq-list">
+      <div class="faq-item" style="border-color:var(--stone-dark)">
+        <div class="faq-q" style="color:var(--parchment)" onclick="toggleFaq(this)" data-i18n="faq_q1">¿Con cuánta antelación debo reservar?</div>
+        <div class="faq-a"><p style="color:var(--stone)" data-i18n="faq_a1">Recomendamos reservar con al menos 3-5 días de antelación en temporada baja y 7-14 días en temporada alta (abril a octubre). Las entradas VIP al Hypogeum se agotan con semanas de anticipación.</p></div>
+      </div>
+      <div class="faq-item" style="border-color:var(--stone-dark)">
+        <div class="faq-q" style="color:var(--parchment)" onclick="toggleFaq(this)" data-i18n="faq_q2">¿Puedo cancelar o cambiar mi reserva?</div>
+        <div class="faq-a"><p style="color:var(--stone)" data-i18n="faq_a2">Sí. Las cancelaciones son gratuitas hasta 48 horas antes de la visita. Podés reprogramar sin cargo adicional hasta 24 horas antes, sujeto a disponibilidad.</p></div>
+      </div>
+      <div class="faq-item" style="border-color:var(--stone-dark)">
+        <div class="faq-q" style="color:var(--parchment)" onclick="toggleFaq(this)" data-i18n="faq_q3">¿Cómo recibo mis entradas?</div>
+        <div class="faq-a"><p style="color:var(--stone)" data-i18n="faq_a3">Recibirás un email de confirmación con tus entradas en formato PDF y QR code, listas para mostrar desde tu teléfono. No es necesario imprimirlas.</p></div>
+      </div>
+      <div class="faq-item" style="border-color:var(--stone-dark)">
+        <div class="faq-q" style="color:var(--parchment)" onclick="toggleFaq(this)" data-i18n="faq_q4">¿Hay descuentos para grupos o colegios?</div>
+        <div class="faq-a"><p style="color:var(--stone)" data-i18n="faq_a4">Sí. Grupos de más de 15 personas tienen un 15% de descuento. Grupos escolares con acreditación docente tienen hasta 25% de descuento. Contactanos por email para reservas grupales.</p></div>
+      </div>
+      <div class="faq-item" style="border-color:var(--stone-dark)">
+        <div class="faq-q" style="color:var(--parchment)" onclick="toggleFaq(this)" data-i18n="faq_q5">¿El sitio es accesible para personas con movilidad reducida?</div>
+        <div class="faq-a"><p style="color:var(--stone)" data-i18n="faq_a5">El Coliseo cuenta con acceso para sillas de ruedas en la planta baja y arena. Los niveles superiores son accesibles en parte. Recomendamos contactarnos para coordinar la visita y asegurar la mejor experiencia.</p></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">COLOSSEUM</div>
+  <p class="footer-note" data-i18n="footer_note">Servicio oficial de venta de entradas · Roma, Italia</p>
+  <ul class="footer-links">
+    <li><a href="#" data-i18n="footer_terms">Términos y condiciones</a></li>
+    <li><a href="#" data-i18n="footer_privacy">Política de privacidad</a></li>
+    <li><a href="#" data-i18n="footer_contact">Contacto</a></li>
+    <li><a href="#" data-i18n="footer_access">Accesibilidad</a></li>
+  </ul>
+  <p class="footer-bottom">© 2025 Colosseum Tickets · Powered by Stripe · <span data-i18n="footer_legal">Este sitio es un servicio de intermediación independiente.</span></p>
+</footer>
+
+<div id="toast"></div>
+
+<script>
+// =====================
+// TRANSLATIONS
+// =====================
+const i18n = {
+  es: {
+    nav_tickets: 'Entradas', nav_info: 'Historia', nav_gallery: 'Galería', nav_faq: 'FAQ',
+    hero_label: 'Roma · Anno Domini LXXX', hero_title: 'COLOSSEUM', hero_sub: 'Amphitheatrum Flavium — Roma, Italia', hero_cta: 'Reservar Entradas',
+    tickets_title: 'Entradas & Experiencias', tickets_sub: 'Elige tu forma de vivir la historia',
+    t1_type:'Acceso Estándar', t1_name:'Entrada Clásica', t1_desc:'La visita esencial: Coliseo, Foro Romano y Palatino. Todo lo que necesitás para vivir Roma antigua.',
+    t1_i1:'Acceso al Coliseo (áreas generales)', t1_i2:'Foro Romano y Monte Palatino', t1_i3:'Entrada con horario reservado', t1_i4:'Válido 24 hs · Sin cola en taquilla',
+    t2_type:'Experiencia Completa', t2_name:'Coliseo + Arena Floor', t2_desc:'Pisá el suelo donde lucharon los gladiadores. Acceso al mítico piso de la arena, el lugar más fotografiado del Coliseo.',
+    t2_i1:'Todo lo del plan Clásico', t2_i2:'Suelo de la Arena (arena floor)', t2_i3:'Acceso prioritario sin cola', t2_i4:'Disponible solo con reserva previa',
+    t3_type:'Tour VIP con Guía', t3_name:'Arena + Tour Guiado', t3_desc:'La experiencia más completa: Arena Floor + guía experto en grupos reducidos. Sin dudas, sin perderse nada.',
+    t3_i1:'Todo lo del plan Completo', t3_i2:'Guía experto certificado incluido', t3_i3:'Grupos reducidos (máx. 25 personas)', t3_i4:'Duración aprox. 2 horas',
+    per_adult:'/ adulto', t1_note:'Menores de 18: €13 · Menores de 6: gratis', t2_note:'Menores de 18: €17 · Menores de 6: gratis', t3_note:'Menores de 18: €23 · Menores de 6: gratis',
+    select_btn:'Seleccionar', booking_title:'Completa tu Reserva',
+    form_date:'Fecha de visita', form_adults:'Adultos', form_children:'Niños (6-17)', form_infants:'Infantes (0-5)', form_time:'Horario de entrada', form_name:'Nombre completo', form_email:'Correo electrónico',
+    order_type:'Tipo:', order_date:'Fecha:', order_time:'Horario:', order_qty:'Entradas:', order_total:'Total:',
+    proceed_pay:'Continuar al pago →', card_label:'Datos de la tarjeta', secure_msg:'Pago seguro procesado por Stripe. No almacenamos datos de tarjeta.', pay_btn:'Confirmar y Pagar',
+    info_title:'El Coliseo de Roma', info_sub:'Maravilla del mundo antiguo',
+    info_h1:'Historia & Construcción', info_h2:'Información Práctica',
+    info_p1:'El Coliseo, conocido en la antigüedad como el Anfiteatro Flavio, fue construido entre el 70 y el 80 d.C. bajo los emperadores Vespasiano y Tito.',
+    info_p2:'Durante más de cuatro siglos fue el escenario de los grandes espectáculos públicos de Roma: combates de gladiadores, caza de animales exóticos y representaciones de famosas batallas.',
+    info_p3:'<strong style="color:var(--gold)">Horario:</strong> Todos los días de 9:00 a 19:00 hs (última entrada 18:00).',
+    info_p4:'<strong style="color:var(--gold)">Cómo llegar:</strong> Metro línea B, parada Colosseo.',
+    info_p5:'<strong style="color:var(--gold)">Recomendaciones:</strong> Reserva con al menos 3 días de antelación en temporada alta.',
+    info_p6:'<strong style="color:var(--gold)">Dirección:</strong> Piazza del Colosseo, 1, 00184 Roma RM, Italia.',
+    stat1:'Espectadores', stat2:'Inauguración', stat3:'Longitud', stat4:'Altura',
+    gallery_title:'Galería', gallery_sub:'Imágenes del Amphitheatrum Flavium',
+    g1:'Vista Exterior', g2:'Interior Arena', g3:'Atardecer', g4:'Detalles Arquitectónicos', g5:'Arcos Históricos',
+    faq_title:'Preguntas Frecuentes', faq_sub:'Todo lo que necesitás saber',
+    faq_q1:'¿Con cuánta antelación debo reservar?', faq_a1:'Recomendamos 3-5 días en temporada baja y 7-14 en temporada alta. Las entradas VIP se agotan semanas antes.',
+    faq_q2:'¿Puedo cancelar o cambiar mi reserva?', faq_a2:'Cancelaciones gratuitas hasta 48 horas antes. Reprogramación sin cargo hasta 24 horas antes.',
+    faq_q3:'¿Cómo recibo mis entradas?', faq_a3:'Email con PDF y QR code. No es necesario imprimir.',
+    faq_q4:'¿Hay descuentos para grupos?', faq_a4:'Grupos +15 personas: 15% descuento. Colegios: hasta 25%. Contactanos para reservas grupales.',
+    faq_q5:'¿Accesibilidad para movilidad reducida?', faq_a5:'Acceso para sillas de ruedas en planta baja y arena. Contactanos para coordinar.',
+    footer_note:'Servicio de venta de entradas · Roma, Italia', footer_terms:'Términos', footer_privacy:'Privacidad', footer_contact:'Contacto', footer_access:'Accesibilidad', footer_legal:'Servicio de intermediación independiente.'
+  },
+  en: {
+    nav_tickets:'Tickets', nav_info:'History', nav_gallery:'Gallery', nav_faq:'FAQ',
+    hero_label:'Rome · Anno Domini LXXX', hero_title:'COLOSSEUM', hero_sub:'Amphitheatrum Flavium — Rome, Italy', hero_cta:'Book Tickets',
+    tickets_title:'Tickets & Experiences', tickets_sub:'Choose how you want to live history',
+    t1_type:'Standard Access', t1_name:'Classic Entry', t1_desc:'The essential visit: Colosseum, Roman Forum and Palatine Hill. Everything you need to experience ancient Rome.',
+    t1_i1:'Colosseum entry (general areas)', t1_i2:'Roman Forum & Palatine Hill', t1_i3:'Timed entry — no ticket booth queue', t1_i4:'Valid 24 hours',
+    t2_type:'Full Experience', t2_name:'Colosseum + Arena Floor', t2_desc:'Step onto the floor where gladiators fought. Access to the iconic arena floor, the most photographed spot in the Colosseum.',
+    t2_i1:'Everything in Classic', t2_i2:'Arena Floor access', t2_i3:'Priority skip-the-line entry', t2_i4:'Available by advance booking only',
+    t3_type:'VIP Guided Tour', t3_name:'Arena + Expert Guide', t3_desc:'The most complete experience: Arena Floor plus a certified expert guide in small groups. See everything, miss nothing.',
+    t3_i1:'Everything in Full Experience', t3_i2:'Certified expert guide included', t3_i3:'Small groups (max. 25 people)', t3_i4:'Approx. 2 hours duration',
+    per_adult:'/ adult', t1_note:'Under 18: €13 · Under 6: free', t2_note:'Under 18: €17 · Under 6: free', t3_note:'Under 18: €23 · Under 6: free',
+    select_btn:'Select', booking_title:'Complete Your Booking',
+    form_date:'Visit date', form_adults:'Adults', form_children:'Children (6-17)', form_infants:'Infants (0-5)', form_time:'Entry time', form_name:'Full name', form_email:'Email address',
+    order_type:'Type:', order_date:'Date:', order_time:'Time:', order_qty:'Tickets:', order_total:'Total:',
+    proceed_pay:'Proceed to payment →', card_label:'Card details', secure_msg:'Secure payment processed by Stripe. We never store card data.', pay_btn:'Confirm & Pay',
+    info_title:'The Colosseum of Rome', info_sub:'Wonder of the ancient world',
+    info_h1:'History & Construction', info_h2:'Practical Information',
+    info_p1:'The Colosseum, known in antiquity as the Flavian Amphitheatre, was built between 70 and 80 AD under emperors Vespasian and Titus.',
+    info_p2:'For over four centuries it was the stage for Rome\'s great public spectacles: gladiatorial combat, exotic animal hunts, and reenactments of famous battles.',
+    info_p3:'<strong style="color:var(--gold)">Hours:</strong> Open daily 9:00–19:00 (last entry 18:00).',
+    info_p4:'<strong style="color:var(--gold)">Getting there:</strong> Metro Line B, Colosseo stop.',
+    info_p5:'<strong style="color:var(--gold)">Tips:</strong> Book at least 3 days ahead in high season (Apr–Oct).',
+    info_p6:'<strong style="color:var(--gold)">Address:</strong> Piazza del Colosseo, 1, 00184 Roma RM, Italy.',
+    stat1:'Spectators', stat2:'Inauguration', stat3:'Length', stat4:'Height',
+    gallery_title:'Gallery', gallery_sub:'Images of the Amphitheatrum Flavium',
+    g1:'Exterior View', g2:'Arena Interior', g3:'Sunset', g4:'Architectural Details', g5:'Historic Arches',
+    faq_title:'Frequently Asked Questions', faq_sub:'Everything you need to know before your visit',
+    faq_q1:'How far in advance should I book?', faq_a1:'We recommend 3-5 days in low season and 7-14 in high season. VIP tickets sell out weeks in advance.',
+    faq_q2:'Can I cancel or change my booking?', faq_a2:'Free cancellations up to 48 hours before. Rescheduling available up to 24 hours before, subject to availability.',
+    faq_q3:'How do I receive my tickets?', faq_a3:'You\'ll receive an email with PDF tickets and a QR code. No printing required.',
+    faq_q4:'Are there group discounts?', faq_a4:'Groups of 15+: 15% discount. Schools with accreditation: up to 25%. Contact us for group bookings.',
+    faq_q5:'Is the site accessible for reduced mobility?', faq_a5:'Wheelchair access on the ground floor and arena. Contact us to coordinate your visit.',
+    footer_note:'Official ticket service · Rome, Italy', footer_terms:'Terms', footer_privacy:'Privacy', footer_contact:'Contact', footer_access:'Accessibility', footer_legal:'Independent intermediary service.'
+  },
+  it: {
+    nav_tickets:'Biglietti', nav_info:'Storia', nav_gallery:'Galleria', nav_faq:'FAQ',
+    hero_label:'Roma · Anno Domini LXXX', hero_title:'COLOSSEO', hero_sub:'Anfiteatro Flavio — Roma, Italia', hero_cta:'Prenota Biglietti',
+    tickets_title:'Biglietti & Esperienze', tickets_sub:'Scegli il tuo modo di vivere la storia',
+    t1_type:'Accesso Standard', t1_name:'Biglietto Classico', t1_desc:'La visita essenziale: Colosseo, Foro Romano e Palatino. Tutto quello che serve per vivere la Roma antica.',
+    t1_i1:'Accesso al Colosseo (aree generali)', t1_i2:'Foro Romano e Monte Palatino', t1_i3:'Ingresso con orario prenotato', t1_i4:'Valido 24 ore · Senza fila alla cassa',
+    t2_type:'Esperienza Completa', t2_name:'Colosseo + Piano Arena', t2_desc:'Cammina sul pavimento dove combattevano i gladiatori. Accesso al leggendario piano dell\'arena, il posto più fotografato del Colosseo.',
+    t2_i1:'Tutto del Biglietto Classico', t2_i2:'Piano Arena (arena floor)', t2_i3:'Accesso prioritario senza fila', t2_i4:'Disponibile solo con prenotazione anticipata',
+    t3_type:'Tour VIP con Guida', t3_name:'Arena + Tour Guidato', t3_desc:'L\'esperienza più completa: Piano Arena più una guida esperta certificata in piccoli gruppi. Vedi tutto, non perdi nulla.',
+    t3_i1:'Tutto dell\'Esperienza Completa', t3_i2:'Guida esperta certificata inclusa', t3_i3:'Piccoli gruppi (max. 25 persone)', t3_i4:'Durata circa 2 ore',
+    per_adult:'/ adulto', t1_note:'Under 18: €13 · Under 6: gratis', t2_note:'Under 18: €17 · Under 6: gratis', t3_note:'Under 18: €23 · Under 6: gratis',
+    select_btn:'Seleziona', booking_title:'Completa la Prenotazione',
+    form_date:'Data della visita', form_adults:'Adulti', form_children:'Bambini (6-17)', form_infants:'Neonati (0-5)', form_time:'Orario di ingresso', form_name:'Nome completo', form_email:'Indirizzo email',
+    order_type:'Tipo:', order_date:'Data:', order_time:'Orario:', order_qty:'Biglietti:', order_total:'Totale:',
+    proceed_pay:'Procedi al pagamento →', card_label:'Dati della carta', secure_msg:'Pagamento sicuro elaborato da Stripe. Non conserviamo i dati della carta.', pay_btn:'Conferma e Paga',
+    info_title:'Il Colosseo di Roma', info_sub:'Meraviglia del mondo antico',
+    info_h1:'Storia & Costruzione', info_h2:'Informazioni Pratiche',
+    info_p1:'Il Colosseo, noto nell\'antichità come Anfiteatro Flavio, fu costruito tra il 70 e l\'80 d.C. sotto gli imperatori Vespasiano e Tito.',
+    info_p2:'Per oltre quattro secoli fu il palcoscenico dei grandi spettacoli pubblici di Roma: combattimenti tra gladiatori, cacce ad animali esotici e rappresentazioni di famose battaglie.',
+    info_p3:'<strong style="color:var(--gold)">Orario:</strong> Tutti i giorni dalle 9:00 alle 19:00 (ultimo ingresso 18:00).',
+    info_p4:'<strong style="color:var(--gold)">Come arrivare:</strong> Metro linea B, fermata Colosseo.',
+    info_p5:'<strong style="color:var(--gold)">Consigli:</strong> Prenota con almeno 3 giorni di anticipo in alta stagione.',
+    info_p6:'<strong style="color:var(--gold)">Indirizzo:</strong> Piazza del Colosseo, 1, 00184 Roma RM, Italia.',
+    stat1:'Spettatori', stat2:'Inaugurazione', stat3:'Lunghezza', stat4:'Altezza',
+    gallery_title:'Galleria', gallery_sub:'Immagini dell\'Anfiteatro Flavio',
+    g1:'Vista Esterna', g2:'Interno Arena', g3:'Tramonto', g4:'Dettagli Architettonici', g5:'Archi Storici',
+    faq_title:'Domande Frequenti', faq_sub:'Tutto quello che devi sapere prima di visitare',
+    faq_q1:'Con quanto anticipo devo prenotare?', faq_a1:'Consigliamo 3-5 giorni in bassa stagione e 7-14 in alta. I biglietti VIP si esauriscono settimane prima.',
+    faq_q2:'Posso annullare o modificare la prenotazione?', faq_a2:'Cancellazioni gratuite fino a 48 ore prima. Riprogrammazione senza costi fino a 24 ore prima.',
+    faq_q3:'Come ricevo i biglietti?', faq_a3:'Riceverai un\'email con PDF e codice QR. Non è necessario stampare.',
+    faq_q4:'Ci sono sconti per gruppi?', faq_a4:'Gruppi +15 persone: 15% di sconto. Scuole: fino al 25%. Contattaci per prenotazioni di gruppo.',
+    faq_q5:'Il sito è accessibile per mobilità ridotta?', faq_a5:'Accesso per sedie a rotelle al piano terra e arena. Contattaci per coordinare la visita.',
+    footer_note:'Servizio biglietteria · Roma, Italia', footer_terms:'Termini', footer_privacy:'Privacy', footer_contact:'Contatti', footer_access:'Accessibilità', footer_legal:'Servizio di intermediazione indipendente.'
+  }
+};
+
+let currentLang = 'es';
+function setLang(lang) {
+  currentLang = lang;
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector(`.lang-btn[onclick="setLang('${lang}')"]`).classList.add('active');
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (i18n[lang][key]) el.innerHTML = i18n[lang][key];
+  });
+  // Update booking box label
+  const bb = document.querySelector('.booking-box::before');
+  document.querySelector('.booking-box').style.setProperty('--label',
+    lang === 'es' ? '"— RESERVA TU LUGAR —"' :
+    lang === 'en' ? '"— BOOK YOUR SPOT —"' :
+    '"— PRENOTA IL TUO POSTO —"'
+  );
 }
+
+// =====================
+// TICKET SELECTION
+// =====================
+let selectedTicket = null;
+let selectedPrice = 0;
+let selectedTime = null;
+
+const ticketNames = {
+  standard: { es: 'Entrada Clásica', en: 'Classic Entry', it: 'Biglietto Classico' },
+  full: { es: 'Coliseo + Arena Floor', en: 'Colosseum + Arena Floor', it: 'Colosseo + Piano Arena' },
+  vip: { es: 'Arena + Tour Guiado', en: 'Arena + Expert Guide', it: 'Arena + Tour Guidato' }
+};
+
+function selectTicket(type, price) {
+  selectedTicket = type;
+  selectedPrice = price;
+  const form = document.getElementById('booking-form');
+  form.style.display = 'block';
+  form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  showToast('✦ ' + (ticketNames[type][currentLang] || type) + ' — €' + price);
+  updateTotal();
+}
+
+function selectTime(el) {
+  if (el.classList.contains('sold-out')) return;
+  document.querySelectorAll('.timeslot').forEach(t => t.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedTime = el.textContent;
+  updateTotal();
+}
+
+function updateTotal() {
+  if (!selectedTicket) return;
+  const adults = parseInt(document.getElementById('qty-adults').value) || 0;
+  const children = parseInt(document.getElementById('qty-children').value) || 0;
+  const childPrice = selectedTicket === 'vip' ? 23 : (selectedTicket === 'full' ? 17 : 13);
+  const total = (adults * selectedPrice) + (children * childPrice);
+  const summary = document.getElementById('order-summary');
+  summary.style.display = 'block';
+  document.getElementById('sum-type').textContent = ticketNames[selectedTicket][currentLang];
+  document.getElementById('sum-date').textContent = document.getElementById('visit-date').value || '—';
+  document.getElementById('sum-time').textContent = selectedTime || '—';
+  document.getElementById('sum-qty').textContent = adults + ' adulto(s)' + (children > 0 ? `, ${children} niño(s)` : '');
+  document.getElementById('sum-total').textContent = '€' + total;
+}
+
+function proceedToPayment() {
+  const name = document.getElementById('visitor-name').value;
+  const email = document.getElementById('visitor-email').value;
+  const date = document.getElementById('visit-date').value;
+  if (!name || !email || !date || !selectedTime) {
+    showToast('⚠ Completá todos los campos y elegí un horario');
+    return;
+  }
+  document.getElementById('stripe-section').classList.add('visible');
+  document.getElementById('stripe-section').scrollIntoView({ behavior: 'smooth' });
+  initStripe();
+}
+
+// =====================
+// STRIPE INTEGRATION
+// =====================
+let stripe, cardElement;
+let stripeInitialized = false;
+
+function initStripe() {
+  if (stripeInitialized) return;
+  // IMPORTANT: Replace with your actual Stripe publishable key
+  stripe = Stripe('pk_test_REPLACE_WITH_YOUR_STRIPE_PUBLISHABLE_KEY');
+  const elements = stripe.elements({
+    fonts: [{ cssSrc: 'https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400&display=swap' }]
+  });
+  cardElement = elements.create('card', {
+    style: {
+      base: {
+        color: '#f5ead6',
+        fontFamily: '"EB Garamond", Georgia, serif',
+        fontSize: '17px',
+        '::placeholder': { color: '#8b7355' }
+      },
+      invalid: { color: '#e74c3c' }
+    }
+  });
+  cardElement.mount('#card-element');
+  cardElement.on('change', e => {
+    document.getElementById('payment-errors').textContent = e.error ? e.error.message : '';
+  });
+  stripeInitialized = true;
+}
+
+async function submitPayment() {
+  const btn = document.getElementById('pay-btn');
+  btn.textContent = '⏳ Procesando...';
+  btn.style.opacity = '0.7';
+  btn.disabled = true;
+
+  const adults = parseInt(document.getElementById('qty-adults').value);
+  const children = parseInt(document.getElementById('qty-children').value) || 0;
+  const childPrice = selectedTicket === 'vip' ? 23 : (selectedTicket === 'full' ? 17 : 13);
+  const total = (adults * selectedPrice) + (children * childPrice);
+
+  try {
+    const res = await fetch('https://colosseum-backend-new.vercel.app/api/create-payment-intent', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        ticket_type: selectedTicket,
+        qty_adults: adults,
+        qty_children: children,
+        qty_infants: parseInt(document.getElementById('qty-infants').value) || 0,
+        visit_date: document.getElementById('visit-date').value,
+        time_slot: selectedTime,
+        customer_name: document.getElementById('visitor-name').value,
+        email: document.getElementById('visitor-email').value,
+        amount: total
+      })
+    });
+
+    const { clientSecret } = await res.json();
+
+    const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
+      payment_method: { card: cardElement }
+    });
+
+    if (error) {
+      document.getElementById('payment-errors').textContent = error.message;
+      btn.textContent = i18n[currentLang]['pay_btn'] || 'Confirmar y Pagar';
+      btn.style.opacity = '1';
+      btn.disabled = false;
+      return;
+    }
+
+    if (paymentIntent.status === 'succeeded') {
+      showToast('✦ ¡Pago exitoso! Revisá tu email.');
+      document.getElementById('stripe-section').innerHTML = `
+        <div style="text-align:center;padding:30px 0">
+          <div style="font-size:48px;margin-bottom:16px">✦</div>
+          <div style="font-family:'Cinzel',serif;font-size:20px;color:var(--gold);margin-bottom:8px">¡Reserva Confirmada!</div>
+          <div style="color:var(--stone);font-size:15px">Tus entradas fueron enviadas a ${document.getElementById('visitor-email').value}</div>
+        </div>
+      `;
+    }
+  } catch (err) {
+    document.getElementById('payment-errors').textContent = 'Error al procesar el pago. Intentá de nuevo.';
+    btn.textContent = i18n[currentLang]['pay_btn'] || 'Confirmar y Pagar';
+    btn.style.opacity = '1';
+    btn.disabled = false;
+  }
+}
+
+// =====================
+// FAQ ACCORDION
+// =====================
+function toggleFaq(el) {
+  const item = el.closest('.faq-item');
+  item.classList.toggle('open');
+}
+
+// =====================
+// TOAST
+// =====================
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 3000);
+}
+
+// Scroll update for date field
+document.getElementById('visit-date').addEventListener('input', updateTotal);
+</script>
+</body>
+</html>
