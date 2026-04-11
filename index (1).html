@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Colosseum Tickets — Entradas Oficiales Sin Cola | Coliseo Romano</title>
+<meta name="description" content="Compra tus entradas para el Coliseo Romano con acceso prioritario. Evita las colas, elige tu horario y recibe tus tickets por email al instante.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://js.stripe.com/v3/"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --white:#ffffff;
+  --gray-50:#f9fafb;
+  --gray-100:#f3f4f6;
+  --gray-200:#e5e7eb;
+  --gray-400:#9ca3af;
+  --gray-600:#4b5563;
+  --gray-800:#1f2937;
+  --gray-900:#111827;
+  --primary:#1a1a2e;
+  --accent:#c8922a;
+  --accent-light:#f5e6c8;
+  --red:#dc2626;
+  --green:#16a34a;
+  --radius:8px;
+  --radius-lg:12px;
+  --shadow:0 1px 3px rgba(0,0,0,.1),0 1px 2px rgba(0,0,0,.06);
+  --shadow-lg:0 10px 25px rgba(0,0,0,.15);
+}
+body{font-family:'Inter',sans-serif;font-size:15px;line-height:1.6;color:var(--gray-800);background:var(--white)}
+a{color:inherit;text-decoration:none}
+img{max-width:100%;display:block}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:200;background:rgba(255,255,255,.97);border-bottom:1px solid var(--gray-200);height:60px;display:flex;align-items:center;padding:0 24px;gap:24px;backdrop-filter:blur(8px)}
+.nav-logo{font-weight:700;font-size:16px;letter-spacing:.5px;color:var(--gray-900);display:flex;align-items:center;gap:8px}
+.nav-logo span{color:var(--accent)}
+.nav-links{display:flex;gap:20px;margin-left:auto;align-items:center}
+.nav-links a{font-size:14px;color:var(--gray-600);font-weight:500;transition:color .15s}
+.nav-links a:hover{color:var(--gray-900)}
+.nav-cta{background:var(--accent);color:var(--white)!important;padding:8px 18px;border-radius:var(--radius);font-size:14px;font-weight:600;transition:opacity .15s}
+.nav-cta:hover{opacity:.9}
+
+/* HERO */
+#hero{padding-top:60px;position:relative;min-height:88vh;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.hero-bg{position:absolute;inset:0;background-image:url('https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Colosseum_in_Rome%2C_Italy_-_April_2007.jpg/1600px-Colosseum_in_Rome%2C_Italy_-_April_2007.jpg');background-size:cover;background-position:center 30%;filter:brightness(.55)}
+.hero-content{position:relative;z-index:2;text-align:center;padding:40px 20px 20px;max-width:700px;width:100%}
+.hero-tag{display:inline-block;background:var(--accent);color:#fff;font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;padding:5px 14px;border-radius:99px;margin-bottom:16px}
+.hero-title{font-size:clamp(32px,5vw,58px);font-weight:700;color:#fff;line-height:1.1;margin-bottom:12px;letter-spacing:-.5px}
+.hero-sub{font-size:16px;color:rgba(255,255,255,.8);margin-bottom:32px;font-weight:300}
+
+/* BOOKING WIDGET */
+.booking-widget{background:#fff;border-radius:var(--radius-lg);padding:20px 24px;box-shadow:var(--shadow-lg);max-width:680px;margin:0 auto;width:100%}
+.widget-row{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:12px;align-items:end}
+.widget-field label{display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:var(--gray-600);margin-bottom:6px}
+.widget-field select,.widget-field input[type=date]{width:100%;border:1.5px solid var(--gray-200);border-radius:var(--radius);padding:10px 12px;font-family:'Inter',sans-serif;font-size:14px;color:var(--gray-800);background:#fff;outline:none;transition:border-color .15s;appearance:none;-webkit-appearance:none;cursor:pointer}
+.widget-field select:focus,.widget-field input:focus{border-color:var(--accent)}
+.qty-group{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.qty-item{text-align:center}
+.qty-item label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:var(--gray-600);display:block;margin-bottom:6px}
+.qty-ctrl{display:flex;align-items:center;border:1.5px solid var(--gray-200);border-radius:var(--radius);overflow:hidden}
+.qty-ctrl button{background:none;border:none;padding:8px 10px;cursor:pointer;font-size:16px;color:var(--gray-600);transition:background .15s;line-height:1}
+.qty-ctrl button:hover{background:var(--gray-100)}
+.qty-ctrl span{flex:1;text-align:center;font-size:14px;font-weight:600;color:var(--gray-900)}
+.btn-reserve{background:var(--accent);color:#fff;border:none;border-radius:var(--radius);padding:12px 28px;font-family:'Inter',sans-serif;font-size:15px;font-weight:700;cursor:pointer;white-space:nowrap;transition:opacity .15s;width:100%}
+.btn-reserve:hover{opacity:.9}
+.widget-row2{display:grid;grid-template-columns:2fr 1fr;gap:12px;margin-top:12px;align-items:end}
+.time-select select{width:100%}
+
+/* TRUST STRIP */
+.trust-strip{background:var(--gray-50);border-bottom:1px solid var(--gray-200);padding:12px 24px}
+.trust-inner{max-width:1100px;margin:0 auto;display:flex;justify-content:center;gap:32px;flex-wrap:wrap}
+.trust-item{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--gray-600);font-weight:500}
+.trust-icon{font-size:16px}
+
+/* SECTION */
+section{padding:72px 24px;max-width:1100px;margin:0 auto}
+.section-label{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:8px}
+.section-title{font-size:clamp(24px,3.5vw,36px);font-weight:700;color:var(--gray-900);margin-bottom:8px;letter-spacing:-.3px}
+.section-sub{font-size:16px;color:var(--gray-600);max-width:540px}
+
+/* TICKETS */
+#tickets-section{background:var(--white);border-top:1px solid var(--gray-200);border-bottom:1px solid var(--gray-200)}
+.tickets-header{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:32px;flex-wrap:wrap;gap:16px}
+.ticket-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px}
+.ticket-card{border:1.5px solid var(--gray-200);border-radius:var(--radius-lg);padding:24px;cursor:pointer;transition:all .2s;position:relative;background:#fff}
+.ticket-card:hover{border-color:var(--accent);box-shadow:0 4px 16px rgba(200,146,42,.15)}
+.ticket-card.selected{border-color:var(--accent);background:var(--accent-light)}
+.ticket-badge{display:inline-block;background:var(--accent);color:#fff;font-size:11px;font-weight:600;padding:3px 10px;border-radius:99px;margin-bottom:12px}
+.ticket-name{font-size:18px;font-weight:700;color:var(--gray-900);margin-bottom:6px}
+.ticket-desc{font-size:13px;color:var(--gray-600);margin-bottom:16px;line-height:1.5}
+.ticket-price{font-size:26px;font-weight:700;color:var(--gray-900)}
+.ticket-price span{font-size:14px;font-weight:400;color:var(--gray-600)}
+.ticket-note{font-size:12px;color:var(--gray-600);margin-top:4px}
+.ticket-features{list-style:none;margin-top:16px;display:flex;flex-direction:column;gap:6px}
+.ticket-features li{font-size:13px;color:var(--gray-600);display:flex;align-items:center;gap:8px}
+.ticket-features li::before{content:'✓';color:var(--green);font-weight:700;flex-shrink:0}
+.more-info-btn{display:inline-block;margin-top:14px;font-size:13px;color:var(--accent);font-weight:500;cursor:pointer;border:none;background:none;padding:0;font-family:'Inter',sans-serif}
+.more-info-btn:hover{text-decoration:underline}
+
+/* BOOKING FORM (full) */
+#booking-section{background:var(--gray-50);border-bottom:1px solid var(--gray-200)}
+.booking-form-wrap{background:#fff;border:1.5px solid var(--gray-200);border-radius:var(--radius-lg);padding:32px;max-width:640px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.form-group{display:flex;flex-direction:column;gap:6px;margin-bottom:16px}
+.form-group.full{grid-column:1/-1}
+.form-group label{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:var(--gray-600)}
+.form-group input,.form-group select{border:1.5px solid var(--gray-200);border-radius:var(--radius);padding:10px 14px;font-family:'Inter',sans-serif;font-size:15px;color:var(--gray-800);outline:none;transition:border-color .15s;background:#fff}
+.form-group input:focus,.form-group select:focus{border-color:var(--accent)}
+.timeslots{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.timeslot{border:1.5px solid var(--gray-200);border-radius:var(--radius);padding:8px 14px;font-size:14px;font-weight:500;cursor:pointer;transition:all .15s;background:#fff;color:var(--gray-700)}
+.timeslot:hover{border-color:var(--accent);color:var(--accent)}
+.timeslot.selected{background:var(--accent);color:#fff;border-color:var(--accent)}
+.timeslot.sold-out{opacity:.4;cursor:not-allowed;text-decoration:line-through}
+.order-summary{background:var(--gray-50);border:1.5px solid var(--gray-200);border-radius:var(--radius);padding:16px;margin-top:8px}
+.order-row{display:flex;justify-content:space-between;font-size:14px;padding:4px 0;color:var(--gray-600)}
+.order-total{font-size:18px;font-weight:700;color:var(--gray-900);border-top:1px solid var(--gray-200);margin-top:8px;padding-top:8px}
+.btn-primary{background:var(--accent);color:#fff;border:none;border-radius:var(--radius);padding:14px 28px;font-family:'Inter',sans-serif;font-size:15px;font-weight:600;cursor:pointer;width:100%;margin-top:8px;transition:opacity .15s}
+.btn-primary:hover{opacity:.9}
+#stripe-section{display:none;margin-top:20px}
+#stripe-section.visible{display:block}
+#card-element{border:1.5px solid var(--gray-200);border-radius:var(--radius);padding:14px}
+#payment-errors{color:var(--red);font-size:13px;margin-top:6px;min-height:18px}
+.secure-note{font-size:12px;color:var(--gray-400);display:flex;align-items:center;gap:6px;margin-bottom:16px}
+
+/* INFO */
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:start}
+.info-block h3{font-size:18px;font-weight:700;color:var(--gray-900);margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--gray-200)}
+.info-block p{font-size:15px;color:var(--gray-600);line-height:1.7;margin-bottom:12px}
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:20px}
+.stat-box{background:var(--gray-50);border:1px solid var(--gray-200);border-radius:var(--radius);padding:16px;text-align:center}
+.stat-num{font-size:26px;font-weight:700;color:var(--accent);display:block}
+.stat-label{font-size:12px;color:var(--gray-600);margin-top:2px}
+
+/* GALLERY */
+.gallery-grid{display:grid;grid-template-columns:2fr 1fr 1fr;grid-template-rows:220px 220px;gap:6px;border-radius:var(--radius-lg);overflow:hidden}
+.gallery-item:first-child{grid-row:1/3}
+.gallery-item{overflow:hidden}
+.gallery-item img{width:100%;height:100%;object-fit:cover;transition:transform .4s}
+.gallery-item:hover img{transform:scale(1.05)}
+
+/* FAQ */
+.faq-list{max-width:680px}
+.faq-item{border-bottom:1px solid var(--gray-200)}
+.faq-q{font-size:16px;font-weight:600;color:var(--gray-900);padding:18px 0;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:16px;user-select:none}
+.faq-q::after{content:'+';font-size:20px;color:var(--accent);transition:transform .2s;flex-shrink:0}
+.faq-item.open .faq-q::after{transform:rotate(45deg)}
+.faq-a{max-height:0;overflow:hidden;transition:max-height .35s ease;font-size:15px;color:var(--gray-600);line-height:1.7}
+.faq-item.open .faq-a{max-height:300px}
+.faq-a p{padding-bottom:18px}
+
+/* LEGAL PAGES */
+.legal-page{display:none;position:fixed;inset:0;z-index:300;background:#fff;overflow-y:auto}
+.legal-page.open{display:block}
+.legal-header{position:sticky;top:0;background:#fff;border-bottom:1px solid var(--gray-200);padding:16px 24px;display:flex;align-items:center;justify-content:space-between}
+.legal-header h2{font-size:18px;font-weight:700}
+.legal-close{background:none;border:none;font-size:24px;cursor:pointer;color:var(--gray-600);padding:4px 8px}
+.legal-content{max-width:760px;margin:0 auto;padding:40px 24px}
+.legal-content h3{font-size:17px;font-weight:700;color:var(--gray-900);margin:28px 0 10px}
+.legal-content p,.legal-content li{font-size:15px;color:var(--gray-600);line-height:1.8;margin-bottom:8px}
+.legal-content ul{padding-left:20px;margin-bottom:12px}
+.legal-company{background:var(--gray-50);border:1px solid var(--gray-200);border-radius:var(--radius);padding:16px;margin-bottom:28px;font-size:14px;color:var(--gray-700);line-height:1.8}
+
+/* FOOTER */
+footer{background:var(--gray-900);color:rgba(255,255,255,.6);padding:48px 24px 28px}
+.footer-inner{max-width:1100px;margin:0 auto}
+.footer-top{display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr;gap:40px;margin-bottom:40px}
+.footer-brand .logo{font-size:18px;font-weight:700;color:#fff;margin-bottom:8px}
+.footer-brand p{font-size:13px;line-height:1.7}
+.footer-col h4{font-size:13px;font-weight:600;color:#fff;margin-bottom:12px;text-transform:uppercase;letter-spacing:.8px}
+.footer-col a,.footer-col p{font-size:13px;display:block;margin-bottom:6px;cursor:pointer;transition:color .15s}
+.footer-col a:hover{color:#fff}
+.footer-bottom{border-top:1px solid rgba(255,255,255,.1);padding-top:20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;font-size:12px}
+.disclaimer{max-width:1100px;margin:16px auto 0;font-size:12px;color:rgba(255,255,255,.4);line-height:1.6}
+
+/* MODAL (ticket info) */
+.modal-overlay{display:none;position:fixed;inset:0;z-index:250;background:rgba(0,0,0,.5);align-items:center;justify-content:center;padding:20px}
+.modal-overlay.open{display:flex}
+.modal-box{background:#fff;border-radius:var(--radius-lg);padding:32px;max-width:480px;width:100%;position:relative}
+.modal-close{position:absolute;top:16px;right:16px;background:none;border:none;font-size:22px;cursor:pointer;color:var(--gray-600)}
+.modal-box h3{font-size:20px;font-weight:700;margin-bottom:16px}
+.modal-box ul{list-style:none;display:flex;flex-direction:column;gap:8px;margin-bottom:16px}
+.modal-box ul li{font-size:14px;color:var(--gray-600);display:flex;align-items:center;gap:8px}
+.modal-box ul li::before{content:'✓';color:var(--green);font-weight:700}
+
+/* TOAST */
+#toast{position:fixed;bottom:24px;right:24px;background:var(--gray-900);color:#fff;padding:12px 20px;border-radius:var(--radius);font-size:14px;font-weight:500;transform:translateY(60px);opacity:0;transition:all .3s;z-index:9999;pointer-events:none}
+#toast.show{transform:translateY(0);opacity:1}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+  nav .nav-links{display:none}
+  .widget-row{grid-template-columns:1fr 1fr}
+  .widget-row2{grid-template-columns:1fr}
+  .form-row{grid-template-columns:1fr}
+  .info-grid{grid-template-columns:1fr}
+  .footer-top{grid-template-columns:1fr 1fr}
+  .gallery-grid{grid-template-columns:1fr 1fr;grid-template-rows:auto}
+  .gallery-item:first-child{grid-row:auto;grid-column:1/-1}
+  .stats-row{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo"><span>⬡</span> Colosseum Tickets</div>
+  <div class="nav-links">
+    <a href="#tickets-section">Entradas</a>
+    <a href="#info-section">Info</a>
+    <a href="#faq-section">FAQ</a>
+    <a href="#booking-section" class="nav-cta">Reservar ahora</a>
+  </div>
+</nav>
+
+<!-- HERO + BOOKING WIDGET -->
+<div id="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-content">
+    <div class="hero-tag">Roma, Italia</div>
+    <h1 class="hero-title">Coliseo Romano<br>Sin Colas</h1>
+    <p class="hero-sub">Entradas con acceso prioritario · Confirmación inmediata por email</p>
+    <div class="booking-widget">
+      <div class="widget-row">
+        <div class="widget-field" style="grid-column:1/3">
+          <label>Tipo de entrada</label>
+          <select id="w-type" onchange="onWidgetTypeChange()">
+            <option value="">Selecciona tipo de entrada…</option>
+            <option value="standard">Acceso Estándar — Coliseo + Foro + Palatino</option>
+            <option value="full">Experiencia Completa — + Arena Floor</option>
+            <option value="vip">Tour VIP con Guía — Grupo reducido</option>
+          </select>
+        </div>
+        <div class="widget-field">
+          <label>Fecha de visita</label>
+          <input type="date" id="w-date" onchange="onWidgetDateChange()" min="">
+        </div>
+        <div class="widget-field" id="w-time-wrap">
+          <label>Horario</label>
+          <select id="w-time" onchange="onWidgetTimeChange()">
+            <option value="">Seleccioná fecha primero</option>
+          </select>
+        </div>
+      </div>
+      <div class="qty-group" style="margin-top:14px">
+        <div class="qty-item">
+          <label>Adultos</label>
+          <div class="qty-ctrl">
+            <button onclick="changeQty('adults',-1)">−</button>
+            <span id="qty-adults">1</span>
+            <button onclick="changeQty('adults',1)">+</button>
+          </div>
+        </div>
+        <div class="qty-item">
+          <label>Niños (6-17)</label>
+          <div class="qty-ctrl">
+            <button onclick="changeQty('children',-1)">−</button>
+            <span id="qty-children">0</span>
+            <button onclick="changeQty('children',1)">+</button>
+          </div>
+        </div>
+        <div class="qty-item">
+          <label>Infantes (0-5)</label>
+          <div class="qty-ctrl">
+            <button onclick="changeQty('infants',-1)">−</button>
+            <span id="qty-infants">0</span>
+            <button onclick="changeQty('infants',1)">+</button>
+          </div>
+        </div>
+      </div>
+      <button class="btn-reserve" style="margin-top:16px" onclick="widgetReserve()">Reservar ahora →</button>
+    </div>
+  </div>
+</div>
+
+<!-- TRUST STRIP -->
+<div class="trust-strip">
+  <div class="trust-inner">
+    <div class="trust-item"><span class="trust-icon">✓</span> Sin cola en taquilla</div>
+    <div class="trust-item"><span class="trust-icon">🔒</span> Pago seguro con Stripe</div>
+    <div class="trust-item"><span class="trust-icon">📧</span> Tickets por email al instante</div>
+    <div class="trust-item"><span class="trust-icon">↩</span> Cancelación hasta 48h antes</div>
+    <div class="trust-item"><span class="trust-icon">🌍</span> Atención en ES · EN · IT</div>
+  </div>
+</div>
+
+<!-- TICKETS -->
+<div id="tickets-section">
+<section>
+  <div class="tickets-header">
+    <div>
+      <div class="section-label">Entradas</div>
+      <h2 class="section-title">Elige tu experiencia</h2>
+    </div>
+  </div>
+  <div class="ticket-grid">
+    <div class="ticket-card" onclick="selectTicketCard('standard',23)" id="card-standard">
+      <div class="ticket-name">Acceso Estándar</div>
+      <div class="ticket-desc">La visita esencial al Coliseo con acceso al Foro Romano y Palatino.</div>
+      <div class="ticket-price">€23 <span>/ adulto</span></div>
+      <div class="ticket-note">Niños 6-17: €13 · Menores de 6: gratis</div>
+      <ul class="ticket-features">
+        <li>Coliseo — áreas generales</li>
+        <li>Foro Romano y Monte Palatino</li>
+        <li>Entrada con horario reservado</li>
+        <li>Sin cola en taquilla</li>
+      </ul>
+      <button class="more-info-btn" onclick="event.stopPropagation();openModal('standard')">Ver más info →</button>
+    </div>
+    <div class="ticket-card" onclick="selectTicketCard('full',27)" id="card-full">
+      <div class="ticket-badge">★ Más popular</div>
+      <div class="ticket-name">Experiencia Completa</div>
+      <div class="ticket-desc">Pisá el suelo de la arena donde lucharon los gladiadores.</div>
+      <div class="ticket-price">€27 <span>/ adulto</span></div>
+      <div class="ticket-note">Niños 6-17: €17 · Menores de 6: gratis</div>
+      <ul class="ticket-features">
+        <li>Todo lo del plan Estándar</li>
+        <li>Acceso al Arena Floor</li>
+        <li>Acceso prioritario sin cola</li>
+        <li>Solo con reserva previa</li>
+      </ul>
+      <button class="more-info-btn" onclick="event.stopPropagation();openModal('full')">Ver más info →</button>
+    </div>
+    <div class="ticket-card" onclick="selectTicketCard('vip',37)" id="card-vip">
+      <div class="ticket-name">Tour VIP con Guía</div>
+      <div class="ticket-desc">La experiencia más completa con guía experto en grupos reducidos.</div>
+      <div class="ticket-price">€37 <span>/ adulto</span></div>
+      <div class="ticket-note">Niños 6-17: €23 · Menores de 6: gratis</div>
+      <ul class="ticket-features">
+        <li>Todo lo del plan Completo</li>
+        <li>Guía certificado incluido</li>
+        <li>Grupos máx. 25 personas</li>
+        <li>Duración aprox. 2 horas</li>
+      </ul>
+      <button class="more-info-btn" onclick="event.stopPropagation();openModal('vip')">Ver más info →</button>
+    </div>
+  </div>
+</section>
+</div>
+
+<!-- FULL BOOKING FORM -->
+<div id="booking-section">
+<section>
+  <div class="section-label">Reserva</div>
+  <h2 class="section-title" style="margin-bottom:28px">Completa tu reserva</h2>
+  <div class="booking-form-wrap">
+    <div class="form-row">
+      <div class="form-group">
+        <label>Tipo de entrada</label>
+        <select id="ticket-type" onchange="onTypeChange()">
+          <option value="">Seleccioná una opción</option>
+          <option value="standard">Acceso Estándar — €23/adulto</option>
+          <option value="full">Experiencia Completa — €27/adulto</option>
+          <option value="vip">Tour VIP con Guía — €37/adulto</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Fecha de visita</label>
+        <input type="date" id="visit-date" onchange="onDateChange(this.value)">
+      </div>
+      <div class="form-group">
+        <label>Adultos</label>
+        <input type="number" id="qty-adults-f" min="1" max="20" value="1" onchange="updateTotal()">
+      </div>
+      <div class="form-group">
+        <label>Niños (6-17)</label>
+        <input type="number" id="qty-children-f" min="0" max="20" value="0" onchange="updateTotal()">
+      </div>
+      <div class="form-group">
+        <label>Infantes (0-5)</label>
+        <input type="number" id="qty-infants-f" min="0" max="10" value="0">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Horario de entrada</label>
+      <div class="timeslots" id="timeslots">
+        <span style="font-size:14px;color:var(--gray-400)">Seleccioná una fecha para ver los horarios</span>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Nombre completo</label>
+        <input type="text" id="visitor-name" placeholder="Ej: María García">
+      </div>
+      <div class="form-group">
+        <label>Correo electrónico</label>
+        <input type="email" id="visitor-email" placeholder="tu@email.com">
+      </div>
+    </div>
+    <div class="order-summary" id="order-summary" style="display:none">
+      <div class="order-row"><span>Tipo:</span><span id="sum-type">—</span></div>
+      <div class="order-row"><span>Fecha:</span><span id="sum-date">—</span></div>
+      <div class="order-row"><span>Horario:</span><span id="sum-time">—</span></div>
+      <div class="order-row"><span>Entradas:</span><span id="sum-qty">—</span></div>
+      <div class="order-row order-total"><span>Total:</span><span id="sum-total">€0</span></div>
+    </div>
+    <button class="btn-primary" onclick="proceedToPayment()">Continuar al pago →</button>
+    <div id="stripe-section">
+      <div class="secure-note">🔒 Pago seguro con Stripe · No almacenamos datos de tarjeta</div>
+      <div id="card-element"></div>
+      <div id="payment-errors"></div>
+      <button class="btn-primary" id="pay-btn" onclick="submitPayment()" style="margin-top:12px">Confirmar y Pagar</button>
+    </div>
+  </div>
+</section>
+</div>
+
+<!-- INFO -->
+<div id="info-section">
+<section>
+  <div class="info-grid">
+    <div>
+      <div class="section-label">Historia</div>
+      <h2 class="section-title">El Coliseo de Roma</h2>
+      <div class="info-block">
+        <h3>Historia y construcción</h3>
+        <p>El Coliseo, el Anfiteatro Flavio, fue construido entre el 70 y el 80 d.C. bajo los emperadores Vespasiano y Tito. Con capacidad para más de 50.000 espectadores, es el anfiteatro romano más grande jamás construido.</p>
+        <p>Durante cuatro siglos fue escenario de combates de gladiadores, cacerías de animales exóticos y grandes espectáculos públicos. Su arquitectura ha inspirado construcciones en todo el mundo occidental.</p>
+      </div>
+      <div class="stats-row">
+        <div class="stat-box"><span class="stat-num">50K</span><span class="stat-label">Espectadores</span></div>
+        <div class="stat-box"><span class="stat-num">80 d.C.</span><span class="stat-label">Inauguración</span></div>
+        <div class="stat-box"><span class="stat-num">188m</span><span class="stat-label">Longitud</span></div>
+        <div class="stat-box"><span class="stat-num">48m</span><span class="stat-label">Altura</span></div>
+      </div>
+    </div>
+    <div>
+      <div class="info-block">
+        <h3>Información práctica</h3>
+        <p><strong>Horario:</strong> Todos los días de 9:00 a 19:00 (última entrada 18:00). Horario reducido en invierno.</p>
+        <p><strong>Cómo llegar:</strong> Metro línea B, parada Colosseo. Autobús líneas 3, 8, 60, 75, 85.</p>
+        <p><strong>Recomendación:</strong> Reservá con al menos 3-7 días de anticipación en temporada alta (abril–octubre).</p>
+        <p><strong>Dirección:</strong> Piazza del Colosseo, 1, 00184 Roma RM, Italia.</p>
+      </div>
+    </div>
+  </div>
+</section>
+</div>
+
+<!-- GALLERY -->
+<div style="background:var(--gray-50);border-top:1px solid var(--gray-200);border-bottom:1px solid var(--gray-200)">
+<section>
+  <div class="gallery-grid">
+    <div class="gallery-item"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/de/Colosseo_2020.jpg/1280px-Colosseo_2020.jpg" alt="Vista exterior del Coliseo" loading="lazy"></div>
+    <div class="gallery-item"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/Colosseum_interior_wide-angle.jpg/800px-Colosseum_interior_wide-angle.jpg" alt="Interior del Coliseo" loading="lazy"></div>
+    <div class="gallery-item"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Colosseum_in_Rome%2C_Italy_-_April_2007.jpg/800px-Colosseum_in_Rome%2C_Italy_-_April_2007.jpg" alt="Coliseo al atardecer" loading="lazy"></div>
+    <div class="gallery-item"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Colosseum_HD.jpg/800px-Colosseum_HD.jpg" alt="Arcos del Coliseo" loading="lazy"></div>
+    <div class="gallery-item"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/Colosseum_Oval_Interior.jpg/800px-Colosseum_Oval_Interior.jpg" alt="Arena del Coliseo" loading="lazy"></div>
+  </div>
+</section>
+</div>
+
+<!-- FAQ -->
+<div id="faq-section">
+<section>
+  <div class="section-label">Preguntas frecuentes</div>
+  <h2 class="section-title" style="margin-bottom:28px">Todo lo que necesitás saber</h2>
+  <div class="faq-list">
+    <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">¿Con cuánta anticipación debo reservar?</div><div class="faq-a"><p>Recomendamos reservar con 3-5 días en temporada baja y 7-14 días en temporada alta (abril–octubre). Las entradas VIP se agotan semanas antes.</p></div></div>
+    <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">¿Puedo cancelar o cambiar mi reserva?</div><div class="faq-a"><p>Sí. Las cancelaciones son gratuitas hasta 48 horas antes de la visita. Podés reprogramar sin cargo hasta 24 horas antes, sujeto a disponibilidad.</p></div></div>
+    <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">¿Cómo recibo mis entradas?</div><div class="faq-a"><p>Recibirás un email de confirmación con tus entradas en PDF y QR code. No es necesario imprimirlas.</p></div></div>
+    <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">¿Hay descuentos para grupos?</div><div class="faq-a"><p>Grupos de más de 15 personas tienen 15% de descuento. Colegios con acreditación docente hasta 25%. Contactanos por email para reservas grupales.</p></div></div>
+    <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">¿Es un servicio de intermediación?</div><div class="faq-a"><p>Sí. Scop Tickets LLC es un servicio independiente de venta de entradas. No somos el operador oficial del Coliseo Romano. Facilitamos la compra y gestión de tickets en nombre de nuestros clientes.</p></div></div>
+    <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">¿El sitio es accesible para personas con movilidad reducida?</div><div class="faq-a"><p>El Coliseo tiene acceso para sillas de ruedas en planta baja y arena. Los niveles superiores son parcialmente accesibles. Contactanos para coordinar tu visita.</p></div></div>
+  </div>
+</section>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <div class="logo">⬡ Colosseum Tickets</div>
+        <p>Servicio de intermediación independiente para la compra de entradas al Coliseo Romano y atractivos turísticos de Roma.</p>
+        <p style="margin-top:10px;font-size:12px">Scop Tickets LLC<br>30 North Gould Street, Sheridan, WY 82801, US</p>
+      </div>
+      <div class="footer-col">
+        <h4>Entradas</h4>
+        <a onclick="selectTicketCard('standard',23);document.getElementById('booking-section').scrollIntoView()">Acceso Estándar</a>
+        <a onclick="selectTicketCard('full',27);document.getElementById('booking-section').scrollIntoView()">Experiencia Completa</a>
+        <a onclick="selectTicketCard('vip',37);document.getElementById('booking-section').scrollIntoView()">Tour VIP con Guía</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a onclick="openLegal('terms')">Términos y condiciones</a>
+        <a onclick="openLegal('privacy')">Política de privacidad</a>
+        <a onclick="openLegal('refund')">Política de reembolso</a>
+        <a onclick="openLegal('cookies')">Política de cookies</a>
+      </div>
+      <div class="footer-col">
+        <h4>Contacto</h4>
+        <p>info@colosseumtickets.com</p>
+        <p>Lunes a viernes 9:00–18:00 CET</p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2025 Scop Tickets LLC · Todos los derechos reservados</span>
+      <span>Powered by Stripe · Servicio de intermediación independiente</span>
+    </div>
+    <p class="disclaimer">Scop Tickets LLC no es el operador oficial del Coliseo Romano ni está afiliado con ninguna entidad gubernamental italiana. Actuamos como intermediarios independientes facilitando la adquisición de entradas en nombre de nuestros clientes. El nombre "Colosseum Tickets" es descriptivo y no implica afiliación oficial.</p>
+  </div>
+</footer>
+
+<!-- LEGAL PAGES -->
+<div id="legal-terms" class="legal-page">
+  <div class="legal-header"><h2>Términos y Condiciones</h2><button class="legal-close" onclick="closeLegal('terms')">×</button></div>
+  <div class="legal-content">
+    <div class="legal-company"><strong>Scop Tickets LLC</strong><br>30 North Gould Street, Sheridan, WY 82801, United States<br>Email: info@colosseumtickets.com</div>
+    <p><em>Última actualización: enero 2025</em></p>
+    <h3>1. Sobre Scop Tickets LLC</h3>
+    <p>Scop Tickets LLC ("nosotros", "la empresa") es un servicio de intermediación independiente que facilita la adquisición de entradas para atracciones turísticas. No somos el operador oficial del Coliseo Romano ni estamos afiliados con el Ministerio de Cultura italiano, el Parco Archeologico del Colosseo ni ninguna entidad gubernamental italiana.</p>
+    <h3>2. Naturaleza del servicio</h3>
+    <p>Actuamos como intermediarios entre el cliente y los operadores oficiales de las atracciones. Al realizar una compra, autorizás a Scop Tickets LLC a adquirir entradas en tu nombre. Se aplica un cargo de servicio sobre el precio base de la entrada.</p>
+    <h3>3. Proceso de compra y confirmación</h3>
+    <p>Las reservas están sujetas a disponibilidad. Una vez completado el pago, recibirás una confirmación por email con tus entradas. La confirmación no garantiza la entrada si llegás fuera del horario reservado.</p>
+    <h3>4. Precios y cargos</h3>
+    <p>Los precios mostrados incluyen el precio base de la entrada más los cargos de servicio de Scop Tickets LLC. Todos los precios se expresan en euros (€) e incluyen los impuestos aplicables.</p>
+    <h3>5. Cancelaciones y reembolsos</h3>
+    <p>Las cancelaciones solicitadas con más de 48 horas de anticipación recibirán reembolso completo. Las cancelaciones entre 24 y 48 horas antes recibirán reembolso del 50%. No se otorgan reembolsos con menos de 24 horas de anticipación ni por no presentación.</p>
+    <h3>6. Responsabilidad</h3>
+    <p>Scop Tickets LLC no se responsabiliza por cambios en el horario o cierre de las atracciones por causas ajenas a su control (obras, eventos especiales, causas de fuerza mayor). En estos casos se ofrecerá reprogramación sin cargo o reembolso completo.</p>
+    <h3>7. Ley aplicable</h3>
+    <p>Estos términos se rigen por las leyes del Estado de Wyoming, Estados Unidos. Cualquier disputa será sometida a los tribunales competentes de Sheridan County, Wyoming.</p>
+  </div>
+</div>
+
+<div id="legal-privacy" class="legal-page">
+  <div class="legal-header"><h2>Política de Privacidad</h2><button class="legal-close" onclick="closeLegal('privacy')">×</button></div>
+  <div class="legal-content">
+    <div class="legal-company"><strong>Scop Tickets LLC</strong><br>30 North Gould Street, Sheridan, WY 82801, United States<br>Email: info@colosseumtickets.com</div>
+    <p><em>Última actualización: enero 2025</em></p>
+    <h3>1. Datos que recopilamos</h3>
+    <ul>
+      <li>Nombre completo y dirección de email</li>
+      <li>Información de pago (procesada de forma segura por Stripe — no almacenamos datos de tarjeta)</li>
+      <li>Datos de la visita (fecha, horario, tipo de entrada)</li>
+      <li>Datos de navegación y uso del sitio (cookies, IP, dispositivo)</li>
+    </ul>
+    <h3>2. Cómo usamos tus datos</h3>
+    <ul>
+      <li>Procesar y confirmar tu reserva</li>
+      <li>Enviarte tus entradas y comunicaciones relacionadas con la reserva</li>
+      <li>Mejorar nuestros servicios y experiencia de usuario</li>
+      <li>Cumplir con obligaciones legales</li>
+      <li>Mostrarte publicidad relevante a través de Google Ads (podés optar por no participar)</li>
+    </ul>
+    <h3>3. Cookies y tecnologías de seguimiento</h3>
+    <p>Utilizamos cookies propias y de terceros (Google Analytics, Google Ads) para analizar el tráfico y personalizar la publicidad. Podés gestionar tus preferencias de cookies en la configuración de tu navegador.</p>
+    <h3>4. Google Ads y remarketing</h3>
+    <p>Utilizamos Google Ads para promocionar nuestros servicios. Google puede usar cookies para mostrar anuncios basados en visitas previas a nuestro sitio. Podés optar por no recibir publicidad personalizada en <a href="https://www.google.com/settings/ads" style="color:var(--accent)">google.com/settings/ads</a>.</p>
+    <h3>5. Compartir datos con terceros</h3>
+    <p>No vendemos tus datos personales. Compartimos información únicamente con: Stripe (procesamiento de pagos), Google (analytics y publicidad), y los operadores de las atracciones (para confirmar tu reserva).</p>
+    <h3>6. Tus derechos</h3>
+    <p>Tenés derecho a acceder, rectificar, eliminar y portar tus datos personales. Para ejercer estos derechos, escribinos a info@colosseumtickets.com.</p>
+    <h3>7. Retención de datos</h3>
+    <p>Conservamos tus datos durante el tiempo necesario para prestarte el servicio y cumplir con las obligaciones legales (mínimo 5 años para registros contables).</p>
+    <h3>8. Seguridad</h3>
+    <p>Implementamos medidas técnicas y organizativas para proteger tus datos, incluyendo cifrado SSL/TLS y acceso restringido a la información.</p>
+  </div>
+</div>
+
+<div id="legal-refund" class="legal-page">
+  <div class="legal-header"><h2>Política de Reembolso</h2><button class="legal-close" onclick="closeLegal('refund')">×</button></div>
+  <div class="legal-content">
+    <div class="legal-company"><strong>Scop Tickets LLC</strong><br>30 North Gould Street, Sheridan, WY 82801, United States<br>Email: info@colosseumtickets.com</div>
+    <h3>Condiciones de reembolso</h3>
+    <ul>
+      <li><strong>+48 horas antes:</strong> Reembolso completo del 100%</li>
+      <li><strong>24–48 horas antes:</strong> Reembolso del 50%</li>
+      <li><strong>Menos de 24 horas:</strong> Sin reembolso</li>
+      <li><strong>No presentación (no-show):</strong> Sin reembolso</li>
+    </ul>
+    <h3>Cómo solicitar un reembolso</h3>
+    <p>Enviá un email a info@colosseumtickets.com con tu número de reserva y motivo de cancelación. Procesamos los reembolsos en un plazo de 5-10 días hábiles al método de pago original.</p>
+    <h3>Excepciones</h3>
+    <p>En caso de cierre de la atracción por causas ajenas a nuestro control (obras, emergencias, clima), ofrecemos reprogramación gratuita o reembolso completo independientemente del tiempo de anticipación.</p>
+    <h3>Modificaciones de reserva</h3>
+    <p>Podés cambiar la fecha u horario de tu reserva hasta 24 horas antes sin cargo adicional, sujeto a disponibilidad. Las modificaciones se realizan por email a info@colosseumtickets.com.</p>
+  </div>
+</div>
+
+<div id="legal-cookies" class="legal-page">
+  <div class="legal-header"><h2>Política de Cookies</h2><button class="legal-close" onclick="closeLegal('cookies')">×</button></div>
+  <div class="legal-content">
+    <div class="legal-company"><strong>Scop Tickets LLC</strong><br>30 North Gould Street, Sheridan, WY 82801, United States</div>
+    <h3>¿Qué son las cookies?</h3>
+    <p>Las cookies son pequeños archivos de texto que se almacenan en tu dispositivo cuando visitás nuestro sitio web.</p>
+    <h3>Tipos de cookies que usamos</h3>
+    <ul>
+      <li><strong>Cookies esenciales:</strong> Necesarias para el funcionamiento del sitio y el proceso de pago.</li>
+      <li><strong>Google Analytics:</strong> Para analizar el tráfico y comportamiento de usuarios.</li>
+      <li><strong>Google Ads:</strong> Para medir la efectividad de nuestras campañas publicitarias y mostrar anuncios relevantes.</li>
+    </ul>
+    <h3>Gestión de cookies</h3>
+    <p>Podés desactivar las cookies en la configuración de tu navegador. Ten en cuenta que desactivar algunas cookies puede afectar la funcionalidad del sitio.</p>
+    <p>Para optar por no recibir publicidad personalizada de Google: <a href="https://www.google.com/settings/ads" style="color:var(--accent)">google.com/settings/ads</a></p>
+  </div>
+</div>
+
+<!-- TICKET INFO MODAL -->
+<div class="modal-overlay" id="ticket-modal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal()">×</button>
+    <div id="modal-content"></div>
+    <button class="btn-primary" onclick="closeModal()">Entendido</button>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ── CONFIG ──
+const SUPABASE_URL = 'https://odhogdwxafqdlfvfbsux.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9kaG9nZHd4YWZxZGxmdmZic3V4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxMTM2MDAsImV4cCI6MjA4OTY4OTYwMH0.sDgtKOdVeK9Xf7VI2aNQhUO5Hs_rY2tmXD1z5pHayF8';
+const STRIPE_KEY = 'YOUR_STRIPE_PUBLISHABLE_KEY'; // ← reemplazar con clave de Stripe
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const stripe = Stripe(STRIPE_KEY);
+const cardElement = stripe.elements().create('card',{style:{base:{fontFamily:'Inter,sans-serif',fontSize:'15px',color:'#1f2937'}}});
+
+const PRICES = { standard:{adult:23,child:13}, full:{adult:27,child:17}, vip:{adult:37,child:23} };
+const TYPE_NAMES = { standard:'Acceso Estándar', full:'Experiencia Completa', vip:'Tour VIP con Guía' };
+const MODAL_INFO = {
+  standard:{name:'Acceso Estándar',price:'€23/adulto · €13/niño · Menores 6: gratis',items:['Coliseo — áreas generales','Foro Romano y Monte Palatino','Entrada con horario reservado','Válido 24 horas · Sin cola en taquilla','Confirmación por email con QR']},
+  full:{name:'Experiencia Completa',price:'€27/adulto · €17/niño · Menores 6: gratis',items:['Todo lo incluido en Estándar','Acceso al Arena Floor (piso del gladiador)','Acceso prioritario sin cola','Solo disponible con reserva previa','Confirmación por email con QR']},
+  vip:{name:'Tour VIP con Guía',price:'€37/adulto · €23/niño · Menores 6: gratis',items:['Todo lo incluido en Experiencia Completa','Guía experto certificado incluido','Grupos reducidos (máx. 25 personas)','Duración aproximada: 2 horas','Confirmación por email con QR']}
+};
+
+let selectedType = null, selectedSlot = null, selectedPrice = 0;
+let stripe_pi = null;
+
+// Min date = today
+const today = new Date().toISOString().split('T')[0];
+document.getElementById('w-date').min = today;
+document.getElementById('visit-date').min = today;
+
+// ── QTY CONTROLS ──
+const qtys = {adults:1, children:0, infants:0};
+function changeQty(type, delta) {
+  const min = type === 'adults' ? 1 : 0;
+  qtys[type] = Math.max(min, Math.min(20, qtys[type] + delta));
+  document.getElementById('qty-' + type).textContent = qtys[type];
+}
+
+// ── WIDGET ──
+function onWidgetTypeChange() {
+  const t = document.getElementById('w-type').value;
+  if (t) { document.getElementById('ticket-type').value = t; selectedType = t; updateTotal(); }
+}
+
+async function onWidgetDateChange() {
+  const d = document.getElementById('w-date').value;
+  const t = document.getElementById('w-type').value;
+  if (!d || !t) return;
+  document.getElementById('visit-date').value = d;
+  await loadTimeslots(d, t, 'w-time');
+}
+
+function onWidgetTimeChange() {
+  const slot = document.getElementById('w-time').value;
+  if (slot) { selectedSlot = slot; updateSummary(); }
+}
+
+async function loadTimeslots(date, type, selectId) {
+  const { data } = await sb.from('availability').select('time_slot,capacity').eq('date', date).eq('ticket_type', type).gt('capacity', 0).order('time_slot');
+  const sel = document.getElementById(selectId);
+  if (!data || !data.length) { sel.innerHTML = '<option value="">Sin disponibilidad para esa fecha</option>'; return; }
+  sel.innerHTML = '<option value="">Seleccioná un horario</option>' + data.map(s => `<option value="${s.time_slot}">${s.time_slot} (${s.capacity} lugares)</option>`).join('');
+}
+
+function widgetReserve() {
+  const type = document.getElementById('w-type').value;
+  const date = document.getElementById('w-date').value;
+  const time = document.getElementById('w-time').value;
+  if (!type || !date || !time) { showToast('Por favor completá todos los campos'); return; }
+  document.getElementById('ticket-type').value = type;
+  document.getElementById('visit-date').value = date;
+  document.getElementById('qty-adults-f').value = qtys.adults;
+  document.getElementById('qty-children-f').value = qtys.children;
+  document.getElementById('qty-infants-f').value = qtys.infants;
+  selectedType = type;
+  onDateChange(date);
+  updateTotal();
+  document.getElementById('booking-section').scrollIntoView({behavior:'smooth'});
+}
+
+// ── BOOKING FORM ──
+function onTypeChange() {
+  selectedType = document.getElementById('ticket-type').value;
+  updateTotal();
+}
+
+async function onDateChange(date) {
+  const type = document.getElementById('ticket-type').value || selectedType;
+  const container = document.getElementById('timeslots');
+  if (!date || !type) { container.innerHTML = '<span style="font-size:14px;color:var(--gray-400)">Seleccioná tipo y fecha primero</span>'; return; }
+  container.innerHTML = '<span style="font-size:14px;color:var(--gray-400)">Cargando horarios...</span>';
+  const { data } = await sb.from('availability').select('time_slot,capacity').eq('date', date).eq('ticket_type', type).gt('capacity',0).order('time_slot');
+  if (!data || !data.length) { container.innerHTML = '<span style="font-size:14px;color:var(--gray-400)">Sin disponibilidad para esa fecha</span>'; return; }
+  container.innerHTML = data.map(s => `<div class="timeslot" onclick="selectTime('${s.time_slot}',this)">${s.time_slot}<br><small style="font-size:11px;opacity:.7">${s.capacity} lugares</small></div>`).join('');
+  selectedSlot = null; updateSummary();
+}
+
+function selectTime(slot, el) {
+  document.querySelectorAll('.timeslot').forEach(t => t.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedSlot = slot;
+  updateSummary();
+}
+
+function updateTotal() {
+  selectedType = document.getElementById('ticket-type').value;
+  updateSummary();
+}
+
+function updateSummary() {
+  if (!selectedType) return;
+  const p = PRICES[selectedType];
+  const adults = parseInt(document.getElementById('qty-adults-f').value)||1;
+  const children = parseInt(document.getElementById('qty-children-f').value)||0;
+  const infants = parseInt(document.getElementById('qty-infants-f').value)||0;
+  const total = adults * p.adult + children * p.child;
+  selectedPrice = total;
+  const summary = document.getElementById('order-summary');
+  summary.style.display = 'block';
+  document.getElementById('sum-type').textContent = TYPE_NAMES[selectedType] || '—';
+  document.getElementById('sum-date').textContent = document.getElementById('visit-date').value || '—';
+  document.getElementById('sum-time').textContent = selectedSlot || '—';
+  document.getElementById('sum-qty').textContent = `${adults}A + ${children}N + ${infants}I`;
+  document.getElementById('sum-total').textContent = '€' + total.toFixed(2);
+}
+
+function proceedToPayment() {
+  const name = document.getElementById('visitor-name').value.trim();
+  const email = document.getElementById('visitor-email').value.trim();
+  if (!selectedType) { showToast('Seleccioná un tipo de entrada'); return; }
+  if (!document.getElementById('visit-date').value) { showToast('Seleccioná una fecha'); return; }
+  if (!selectedSlot) { showToast('Seleccioná un horario'); return; }
+  if (!name) { showToast('Ingresá tu nombre completo'); return; }
+  if (!email || !email.includes('@')) { showToast('Ingresá un email válido'); return; }
+  const ss = document.getElementById('stripe-section');
+  ss.classList.add('visible');
+  cardElement.mount('#card-element');
+  ss.scrollIntoView({behavior:'smooth'});
+}
+
+async function submitPayment() {
+  const btn = document.getElementById('pay-btn');
+  btn.disabled = true; btn.textContent = 'Procesando...';
+  document.getElementById('payment-errors').textContent = '';
+  try {
+    const adults = parseInt(document.getElementById('qty-adults-f').value)||1;
+    const children = parseInt(document.getElementById('qty-children-f').value)||0;
+    const infants = parseInt(document.getElementById('qty-infants-f').value)||0;
+    const name = document.getElementById('visitor-name').value.trim();
+    const email = document.getElementById('visitor-email').value.trim();
+    const amount = Math.round(selectedPrice * 100);
+
+    // Create PaymentIntent via Supabase Edge Function
+    const res = await fetch(`${SUPABASE_URL}/functions/v1/create-payment-intent`, {
+      method:'POST',
+      headers:{'Content-Type':'application/json','apikey':SUPABASE_ANON_KEY},
+      body:JSON.stringify({amount,currency:'eur',email,ticket_type:selectedType,visit_date:document.getElementById('visit-date').value,time_slot:selectedSlot,qty_adults:adults,qty_children:children,qty_infants:infants,visitor_name:name})
+    });
+    const { client_secret, order_id } = await res.json();
+
+    const { error } = await stripe.confirmCardPayment(client_secret, {
+      payment_method:{ card:cardElement, billing_details:{ name, email } }
+    });
+    if (error) { document.getElementById('payment-errors').textContent = error.message; return; }
+    showToast('¡Pago exitoso! Revisá tu email 🎉');
+    document.getElementById('stripe-section').classList.remove('visible');
+    document.getElementById('order-summary').style.display = 'none';
+  } catch(e) {
+    document.getElementById('payment-errors').textContent = 'Error procesando el pago. Intentá de nuevo.';
+  } finally {
+    btn.disabled = false; btn.textContent = 'Confirmar y Pagar';
+  }
+}
+
+// ── TICKET CARDS ──
+function selectTicketCard(type, price) {
+  document.querySelectorAll('.ticket-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById('card-' + type).classList.add('selected');
+  document.getElementById('ticket-type').value = type;
+  selectedType = type; selectedPrice = price;
+  document.getElementById('w-type').value = type;
+  updateTotal();
+}
+
+// ── MODALS ──
+function openModal(type) {
+  const info = MODAL_INFO[type];
+  document.getElementById('modal-content').innerHTML = `<h3>${info.name}</h3><p style="font-size:13px;color:var(--gray-600);margin-bottom:14px">${info.price}</p><ul>${info.items.map(i=>`<li>${i}</li>`).join('')}</ul>`;
+  document.getElementById('ticket-modal').classList.add('open');
+}
+function closeModal() { document.getElementById('ticket-modal').classList.remove('open'); }
+
+// ── LEGAL ──
+function openLegal(page) { document.getElementById('legal-' + page).classList.add('open'); document.body.style.overflow = 'hidden'; }
+function closeLegal(page) { document.getElementById('legal-' + page).classList.remove('open'); document.body.style.overflow = ''; }
+
+// ── FAQ ──
+function toggleFaq(el) {
+  const item = el.parentElement;
+  const wasOpen = item.classList.contains('open');
+  document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+  if (!wasOpen) item.classList.add('open');
+}
+
+// ── TOAST ──
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+</script>
+</body>
+</html>
